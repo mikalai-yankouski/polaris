@@ -6,6 +6,8 @@ class ReservationPolicy < ApplicationPolicy
   def create? = user.present? && record.user_id == user.id
 
   def cancel? = (owner? || staff?) && record.cancellable?
+  def pay? = owner? && record.payable?
+  def record_on_site? = staff? && record.payable?
 
   def confirm?  = staff? && record.confirmable?
   def decline?  = staff? && record.declinable?

@@ -70,6 +70,34 @@ bin/dev              # сервер + Tailwind + Solid Queue
 
 В dev-окружении письма открываются в браузере (letter_opener).
 
+## Онлайн-оплата (bePaid)
+
+Предоплата брони картой через Checkout API bePaid (интеграция по образцу varka):
+после создания брони гость сразу уходит на страницу оплаты bePaid; итог приходит
+webhook'ом, статус брони и письмо «оплачено» обновляются автоматически.
+Админ может зафиксировать оплату «на месте» (наличные/карта на ресепшене).
+
+Ключи магазина (ENV или `bin/rails credentials:edit` → `bepaid:`):
+
+```bash
+BEPAID_SHOP_ID=...      # Магазины → Подробнее → Ключи магазина
+BEPAID_SECRET_KEY=...
+BEPAID_PUBLIC_KEY=...   # для проверки подписи webhook (в production обязателен)
+BEPAID_TEST_MODE=true   # по умолчанию: включён везде, кроме production
+```
+
+Тестовый платёж: **4111 1111 1111 1111**, любой будущий срок, любой CVC/CVV.
+
+Локальная проверка webhook (без подписи работает вне production;
+все поля — внутри `transaction`, как присылает bePaid):
+
+```bash
+curl -u $BEPAID_SHOP_ID:$BEPAID_SECRET_KEY -X POST http://localhost:3000/bepaid/webhook \
+  -H 'Content-Type: application/json' \
+  -d '{"transaction":{"status":"successful","amount":10000,"currency":"BYN","test":true,
+       "tracking_id":"<tracking_id платежа>","uid":"test-uid"}}'
+```
+
 ## Тесты и проверки
 
 ```bash

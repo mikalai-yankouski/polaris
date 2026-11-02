@@ -20,4 +20,9 @@ class ReservationMailer < ApplicationMailer
     @reservation = params[:reservation]
     mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
   end
+
+  def paid
+    @reservation = params[:reservation]
+    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+  end
 end

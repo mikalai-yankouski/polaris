@@ -113,6 +113,20 @@ RSpec.describe "Admin", type: :request do
     end
   end
 
+  describe "POST /admin/reservations/:id/record_on_site" do
+    it "records a successful on-site payment" do
+      sign_in create(:user, :manager)
+      reservation = create(:reservation, :confirmed)
+
+      expect {
+        post record_on_site_admin_reservation_path(reservation)
+      }.to change { reservation.payments.count }
+
+      expect(reservation.reload).to be_paid
+      expect(reservation.payments.last).to be_on_site
+    end
+  end
+
   describe "GET /admin/reports/room_hours" do
     it "renders the html report" do
       sign_in create(:user, :admin)

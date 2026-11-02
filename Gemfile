@@ -31,6 +31,8 @@ gem "chartkick"
 gem "groupdate"
 # Excel (xlsx) export for reports [https://github.com/caxlsx/caxlsx]
 gem "caxlsx"
+# HTTP client for the bePaid checkout API [https://github.com/lostisland/faraday]
+gem "faraday"
 
 # Russian locales for Rails [https://github.com/svenfuchs/rails-i18n]
 gem "rails-i18n", "~> 8.0"

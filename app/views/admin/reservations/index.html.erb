@@ -31,6 +31,7 @@
           <th class="px-4 py-3"><%= Reservation.human_attribute_name(:purpose) %></th>
           <th class="px-4 py-3"><%= Reservation.human_attribute_name(:total_price_cents) %></th>
           <th class="px-4 py-3"><%= Reservation.human_attribute_name(:status) %></th>
+          <th class="px-4 py-3"><%= t("payments.title") %></th>
           <th class="px-4 py-3"></th>
         </tr>
       </thead>
@@ -48,6 +49,14 @@
             <td class="px-4 py-3 max-w-40 truncate text-slate-500"><%= reservation.purpose %></td>
             <td class="px-4 py-3"><%= money(reservation.total_price_cents) %></td>
             <td class="px-4 py-3"><%= status_badge(reservation) %></td>
+            <td class="px-4 py-3">
+              <%= payment_badge(reservation) %>
+              <% if policy(reservation).record_on_site? %>
+                <%= button_to t("payments.record_on_site"), record_on_site_admin_reservation_path(reservation), method: :post,
+                      form: { data: { turbo_confirm: "Отметить оплату на месте?" } },
+                      class: "mt-1 cursor-pointer text-xs font-medium text-slate-600 underline hover:text-slate-900" %>
+              <% end %>
+            </td>
             <td class="px-4 py-3">
               <div class="flex justify-end gap-2 text-xs">
                 <% if policy(reservation).extend? %>

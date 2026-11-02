@@ -2,8 +2,8 @@ class ReservationsController < ApplicationController
   before_action :set_reservation, only: :cancel
 
   def index
-    @upcoming = policy_scope(Reservation).upcoming
-    @past = policy_scope(Reservation).where.not(status: %w[pending confirmed]).order(starts_at: :desc)
+    @upcoming = policy_scope(Reservation).upcoming.includes(:zone, :payments)
+    @past = policy_scope(Reservation).where.not(status: %w[pending confirmed]).order(starts_at: :desc).includes(:zone, :payments)
   end
 
   def create
@@ -13,6 +13,20 @@ class ReservationsController < ApplicationController
 
     if @reservation.save
       ReservationMailer.with(reservation: @reservation).submitted.deliver_later
+
+      # Предоплата: сразу уводим на страницу bePaid (если настроен)
+      if Bepaid::Config.configured? && @reservation.payable?
+        result = Payments::Checkout.call(
+          reservation: @reservation,
+          return_url: reservations_url,
+          notification_url: bepaid_webhook_url
+        )
+        if result.success?
+          redirect_to result.redirect_url, allow_other_host: true
+          return
+        end
+      end
+
       redirect_to reservations_path, notice: t(".created")
     else
       @reservations = @zone.reservations.blocking.where(starts_at: Time.current..).order(:starts_at).limit(50)

@@ -7,6 +7,7 @@
       <th class="px-4 py-3"><%= Reservation.human_attribute_name(:guests_count) %></th>
       <th class="px-4 py-3"><%= Reservation.human_attribute_name(:total_price_cents) %></th>
       <th class="px-4 py-3"><%= Reservation.human_attribute_name(:status) %></th>
+      <th class="px-4 py-3"><%= t("payments.title") %></th>
       <% if cancellable %><th class="px-4 py-3"></th><% end %>
     </tr>
   </thead>
@@ -22,6 +23,13 @@
           <%= status_badge(reservation) %>
           <% if reservation.review_note.present? %>
             <span class="mt-1 block text-xs text-slate-400"><%= reservation.review_note %></span>
+          <% end %>
+        </td>
+        <td class="px-4 py-3">
+          <%= payment_badge(reservation) %>
+          <% if reservation.payable? && policy(reservation).pay? %>
+            <%= button_to t("payments.pay"), reservation_payment_path(reservation), method: :post,
+                  class: "mt-1 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-800" %>
           <% end %>
         </td>
         <% if cancellable %>

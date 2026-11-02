@@ -10,6 +10,7 @@ class Reservation < ApplicationRecord
 
   belongs_to :zone
   belongs_to :user
+  has_many :payments, dependent: :destroy
 
   enum :status, { pending: 0, confirmed: 1, declined: 2, cancelled: 3, completed: 4 }, default: :pending
 
@@ -44,6 +45,17 @@ class Reservation < ApplicationRecord
   def blocked_until = ends_at + cleaning_minutes.minutes
 
   def running? = starts_at <= Time.current && Time.current < ends_at
+
+  def paid?
+    if payments.loaded?
+      payments.any?(&:successful?)
+    else
+      payments.successful.exists?
+    end
+  end
+
+  def blocking? = pending? || confirmed?
+  def payable? = !paid? && blocking?
 
   def confirmable?  = pending?
   def declinable?   = pending?

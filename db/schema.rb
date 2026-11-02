@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_090003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_093000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -28,6 +28,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_090003) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.bigint "reservation_id", null: false
+    t.string "tracking_id", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "method", default: 0, null: false
+    t.integer "amount_cents", null: false
+    t.string "currency", default: "BYN", null: false
+    t.string "bepaid_uid"
+    t.boolean "test", default: true, null: false
+    t.jsonb "raw_response", default: {}, null: false
+    t.datetime "paid_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reservation_id"], name: "index_payments_on_reservation_id"
+    t.index ["status"], name: "index_payments_on_status"
+    t.index ["tracking_id"], name: "index_payments_on_tracking_id", unique: true
   end
 
   create_table "price_rules", force: :cascade do |t|
@@ -125,6 +143,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_090003) do
     t.index ["name"], name: "index_zones_on_name", unique: true
   end
 
+  add_foreign_key "payments", "reservations"
   add_foreign_key "price_rules", "zones"
   add_foreign_key "reservations", "users"
   add_foreign_key "reservations", "zones"

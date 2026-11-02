@@ -32,6 +32,23 @@ ru:
   day_kinds:
     weekday: "Будни"
     weekend: "Выходные"
+  payment_statuses:
+    pending: "Ожидает оплаты"
+    successful: "Оплачено"
+    failed: "Платёж не прошёл"
+
+  payments:
+    title: "Оплата"
+    pay: "Оплатить онлайн"
+    record_on_site: "на месте"
+    badge:
+      paid: "Оплачено онлайн"
+      paid_on_site: "Оплачено на месте"
+      unpaid: "Не оплачено"
+    checkout:
+      not_payable: "Эту бронь уже нельзя оплатить"
+      not_configured: "Онлайн-оплата временно недоступна — мы уже работаем над этим. Оплатите на месте при визите."
+      description: "Polaris — бронь «%{zone}»"
 
   pundit:
     default: "Недостаточно прав для этого действия"
@@ -108,6 +125,8 @@ ru:
         completed: "Бронь %{name} завершена"
       extend:
         extended: "Бронь продлена на %{minutes} мин., итоговая стоимость %{total}"
+      record_on_site:
+        recorded_on_site: "Оплата брони %{name} на месте зафиксирована"
     zones:
       index:
         title: "Зоны"
@@ -175,6 +194,7 @@ ru:
       max_duration: "Максимальная длительность — %{duration}"
       approval_required: "Бронь требует подтверждения администратора"
       auto_confirm: "Бронь подтверждается автоматически"
+      prepayment_note: "После создания брони вы перейдёте к онлайн-оплате картой (bePaid). Бронь считается подтверждённой после оплаты."
       upcoming: "Занятость"
       no_upcoming: "Свободна — предстоящих броней нет"
       guests_capacity: "вместимость"
@@ -242,6 +262,10 @@ ru:
       subject: "Напоминание: «%{zone}» завтра"
       heading: "Скоро ваша встреча"
       body: "Напоминаем: бронь зоны «%{zone}» на %{starts}. До встречи!"
+    paid:
+      subject: "Оплата брони «%{zone}» получена"
+      heading: "Бронь оплачена"
+      body: "Спасибо! Оплата %{amount} за бронь «%{zone}» на %{starts} получена. До встречи!"
     footer: "Это автоматическое письмо приложения Polaris."
 
   activerecord:

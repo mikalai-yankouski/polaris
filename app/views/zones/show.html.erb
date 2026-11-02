@@ -34,6 +34,9 @@
     </p>
 
     <% if authenticated? %>
+      <% if Bepaid::Config.configured? %>
+        <p class="mt-4 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700"><%= t("zones.show.prepayment_note") %></p>
+      <% end %>
       <%= render "reservations/form", zone: @zone, reservation: @reservation %>
     <% else %>
       <p class="mt-6">

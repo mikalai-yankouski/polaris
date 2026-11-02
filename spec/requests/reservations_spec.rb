@@ -45,6 +45,33 @@ RSpec.describe "Reservations", type: :request do
     end
   end
 
+  describe "POST /reservations/:reservation_id/payment" do
+    it "redirects the owner to the bePaid checkout page" do
+      reservation = create(:reservation, user:)
+      fake_client = Class.new do
+        def create_checkout(**)
+          { "redirect_url" => "https://checkout.bepaid.by/v2/checkout?token=test" }
+        end
+      end.new
+      allow(Bepaid::Client).to receive(:new).and_return(fake_client)
+      allow(Bepaid::Config).to receive(:configured?).and_return(true)
+
+      post reservation_payment_path(reservation)
+
+      expect(response).to redirect_to("https://checkout.bepaid.by/v2/checkout?token=test")
+      expect(reservation.payments.pending.count).to eq(1)
+    end
+
+    it "does not allow paying for someone else's reservation" do
+      reservation = create(:reservation, user: create(:user))
+
+      post reservation_payment_path(reservation)
+
+      expect(response).to redirect_to(root_path)
+      expect(reservation.payments.count).to eq(0)
+    end
+  end
+
   describe "POST /reservations/:id/cancel" do
     it "cancels own reservation" do
       reservation = create(:reservation, user:)
