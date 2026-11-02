@@ -3,6 +3,17 @@
   <%= link_to t("admin.nav.reservations"), admin_reservations_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800" %>
 </div>
 
+<% if @active_reservations.any? %>
+  <section class="mb-8">
+    <h2 class="mb-4 font-semibold text-slate-900"><%= t(".active_now") %></h2>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <% @active_reservations.each do |reservation| %>
+        <%= render "active_reservation", reservation: %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
 <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
   <%= render "stat_card", label: t(".total_reservations"), value: @dashboard.total_reservations %>
   <%= render "stat_card", label: t(".total_guests"), value: @dashboard.total_guests %>

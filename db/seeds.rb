@@ -46,36 +46,82 @@ members = %w[
 end
 puts "  users: #{User.count}"
 
+# 7 комнат клуба «Дом на Полярной» (пакет решений 02.11.2026):
+# второй этаж — к Новому году, первый — к февралю.
+# tariffs: [день 10–17, вечер 17–23] × [будни, выходные], коп. за час
 zones_data = [
-  { name: "Панорама", capacity: 12, floor: 7, hourly_rate_cents: 6000, requires_approval: true,
-    description: "Просторная зона на последнем этаже с панорамными окнами и видом на город.",
-    amenities: [ "Панорамные окна", "Переговорный стол", "Кофемашина", "Видеоконференция" ] },
-  { name: "Библиотека", capacity: 6, floor: 3, hourly_rate_cents: 3500, requires_approval: true,
-    description: "Тихая зона с книжными стеллажами и мягкими креслами для работы и чтения.",
-    amenities: [ "Библиотека", "Кофемашина", "Софа-зона" ] },
-  { name: "Студия", capacity: 4, floor: 2, hourly_rate_cents: 2500, requires_approval: false,
-    description: "Компактная переговорная с проектором. Бронь подтверждается автоматически.",
-    amenities: [ "Проектор", "Переговорный стол" ] },
-  { name: "Терраса", capacity: 20, floor: 8, hourly_rate_cents: 9000, requires_approval: true,
-    description: "Открытая терраса для вечерних встреч и мероприятий на свежем воздухе.",
-    amenities: [ "Терраса", "Кофемашина", "Софа-зона" ] },
-  { name: "Лаундж", capacity: 10, floor: 5, hourly_rate_cents: 4500, requires_approval: true,
-    description: "Уютная зона отдыха с диванами и мягким светом для неформальных встреч.",
-    amenities: [ "Софа-зона", "Кофемашина", "Панорамные окна" ] }
+  { name: "Кинокомната Большая", building_code: "2-10", room_type: :cinema, capacity: 8, floor: 2,
+    base: 5000, day: [ 3500, 5000 ], evening: [ 5000, 6500 ], buffer: 15,
+    description: "Большая кинокомната с ТВ 85″, диванами и попкорном.",
+    amenities: [ "Проектор", "Софа-зона", "Кофемашина" ] },
+  { name: "Кинокомната Малая", building_code: "2-11", room_type: :cinema, capacity: 4, floor: 2,
+    base: 4000, day: [ 3000, 4000 ], evening: [ 4000, 5000 ], buffer: 15,
+    description: "Уютная кинокомната на двоих-четверых.",
+    amenities: [ "Проектор", "Софа-зона" ] },
+  { name: "Караоке-холл", building_code: "2-8", room_type: :karaoke, capacity: 12, floor: 2,
+    base: 7000, day: [ 5000, 7000 ], evening: [ 7000, 9000 ], buffer: 30,
+    description: "Караоке-зал с проектором, радиомикрофонами и акустикой Denon.",
+    amenities: [ "Проектор", "Кофемашина", "Софа-зона" ] },
+  { name: "Лаундж 2-1", building_code: "2-1", room_type: :lounge, capacity: 10, floor: 2,
+    base: 4000, day: [ 2500, 3500 ], evening: [ 4000, 5500 ], buffer: 15,
+    description: "Лаундж для встреч и настольных игр.",
+    amenities: [ "Софа-зона", "Кофемашина" ] },
+  { name: "Бильярдная", building_code: "1-8", room_type: :billiard, capacity: 8, floor: 1,
+    base: 4500, day: [ 3500, 4500 ], evening: [ 4500, 6000 ], buffer: 15,
+    description: "Бильярдный стол в профессиональной зоне 1,6 м вокруг.",
+    amenities: [ "Переговорный стол" ] },
+  { name: "PlayStation", building_code: "1-6", room_type: :ps5, capacity: 4, floor: 1,
+    base: 3000, day: [ 2000, 3000 ], evening: [ 3000, 4000 ], buffer: 15,
+    description: "Комната с PS5 и ТВ: турниры по файтингам и футболу.",
+    amenities: [ "Проектор" ] },
+  { name: "Кинокомната Премиум", building_code: "1-4", room_type: :cinema, capacity: 6, floor: 1,
+    base: 5500, day: [ 4000, 5500 ], evening: [ 5500, 7000 ], buffer: 15,
+    description: "Кинокомната первого этажа с проектором и шторами.",
+    amenities: [ "Проектор", "Софа-зона", "Кофемашина" ] }
 ]
 
 zones = zones_data.map do |attrs|
   amenities_names = attrs.delete(:amenities)
-  zone = Zone.find_or_create_by!(name: attrs[:name]) do |z|
+  room_attrs = attrs.slice(:name, :building_code, :room_type, :capacity, :floor, :description)
+  zone = Zone.find_or_create_by!(name: room_attrs[:name]) do |z|
     z.building = building
-    z.assign_attributes(attrs)
+    z.assign_attributes(room_attrs)
+    z.hourly_rate_cents = attrs[:base]
+    z.min_duration_minutes = 120 # минимум 2–3 часа по ТЗ
+    z.max_duration_minutes = 480
+    z.requires_approval = true
+    z.active = true
+    z.cleaning_buffer_minutes = attrs[:buffer]
   end
+
+  # тарифная сетка: будни/выходные × день(10–17)/вечер(17–23)
+  [ [ :weekday, 0 ], [ :weekend, 1 ] ].each do |(kind, idx)|
+    { "10:00" => attrs[:day][idx], "17:00" => attrs[:evening][idx] }.each do |(from, rate)|
+      to = from == "10:00" ? "17:00" : "23:00"
+      zone.price_rules.find_or_create_by!(day_kind: kind, starts_at_time: from, ends_at_time: to) do |rule|
+        rule.hourly_rate_cents = rate
+      end
+    end
+  end
+
   amenities_names.each do |name|
     zone.zone_amenities.find_or_create_by!(amenity: amenities.fetch(name))
   end
   zone
 end
-puts "  zones: #{Zone.count}"
+
+# смежность комнат (правило «караоке не в соседних»): соседние номера на этаже
+adjacency_pairs = [ [ "2-8", "2-10" ], [ "2-10", "2-11" ], [ "2-11", "2-1" ], [ "1-4", "1-6" ] ]
+by_code = zones.index_by(&:building_code)
+adjacency_pairs.each do |(a_code, b_code)|
+  a = by_code[a_code]
+  b = by_code[b_code]
+  next unless a && b
+
+  ZoneAdjacency.find_or_create_by!(zone: a, adjacent_zone: b)
+  ZoneAdjacency.find_or_create_by!(zone: b, adjacent_zone: a)
+end
+puts "  zones: #{Zone.count}, price rules: #{PriceRule.count}, adjacencies: #{ZoneAdjacency.count}"
 
 # Демо-брони за последние 30 дней и на будущее — чтобы оживить дашборд
 random = Random.new(42)
@@ -102,12 +148,15 @@ if Reservation.count.zero?
 
     # Исторические демо-брони: валидация «только будущее» не для сидов,
     # пересечения всё равно исключены проверкой выше и constraint в БД.
+    children_party = [ true, false, false, false ].sample(random:)
     reservation = Reservation.new(
       zone:, user:,
       starts_at:, ends_at:,
       guests_count: 1 + random.rand(zone.capacity),
-      purpose: [ "Встреча с клиентом", "Рабочая сессия", "День рождения", "Мастер-класс", "Пленарное собрание" ].sample(random:)
+      purpose: [ "Встреча с клиентом", "Рабочая сессия", "День рождения", "Мастер-класс", "Пленарное собрание" ].sample(random:),
+      children_party:
     )
+    reservation.cleaning_minutes = zone.cleaning_minutes_for(children_party:)
     reservation.total_price_cents = (zone.hourly_rate_cents * reservation.duration_minutes / 60.0).round
     reservation.save(validate: false)
     reservation.update_column(:status, Reservation.statuses[status]) unless status == :pending

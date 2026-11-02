@@ -50,6 +50,11 @@
             <td class="px-4 py-3"><%= status_badge(reservation) %></td>
             <td class="px-4 py-3">
               <div class="flex justify-end gap-2 text-xs">
+                <% if policy(reservation).extend? %>
+                  <%= button_to "+30 #{t('minutes_short')}", extend_admin_reservation_path(reservation, minutes: 30), method: :post,
+                        form: { data: { turbo_confirm: "Продлить на 30 минут?" } },
+                        class: "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50" %>
+                <% end %>
                 <% if reservation.confirmable? %>
                   <%= button_to t(".confirm"), confirm_admin_reservation_path(reservation), method: :post,
                         class: "cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 font-medium text-white hover:bg-emerald-500" %>

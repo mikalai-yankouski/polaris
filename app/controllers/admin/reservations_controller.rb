@@ -1,6 +1,6 @@
 module Admin
   class ReservationsController < BaseController
-    before_action :set_reservation, only: %i[confirm decline cancel complete]
+    before_action :set_reservation, only: %i[confirm decline cancel complete extend]
 
     def index
       scope = policy_scope(Reservation).includes(:zone, :user)
@@ -40,6 +40,16 @@ module Admin
       authorize @reservation
       @reservation.complete!
       redirect_to admin_reservations_path, notice: t(".completed", name: @reservation.user)
+    rescue ActiveRecord::RecordInvalid
+      redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
+    end
+
+    # Продление на месте: шаг 30 минут по умолчанию
+    def extend
+      authorize @reservation
+      minutes = params.fetch(:minutes, 30).to_i
+      @reservation.extend!(minutes)
+      redirect_to admin_reservations_path, notice: t(".extended", minutes:, total: view_context.money(@reservation.total_price_cents))
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end

@@ -24,6 +24,7 @@ FactoryBot.define do
   factory :zone do
     association :building
     sequence(:name) { |n| "Зона #{n}" }
+    sequence(:building_code) { |n| "2-#{n}" }
     description { "Описание зоны" }
     capacity { 10 }
     floor { 2 }
@@ -32,6 +33,19 @@ FactoryBot.define do
     max_duration_minutes { 480 }
     requires_approval { true }
     active { true }
+    cleaning_buffer_minutes { 15 }
+
+    trait :karaoke do
+      room_type { :karaoke }
+    end
+  end
+
+  factory :price_rule do
+    association :zone
+    day_kind { :weekday }
+    starts_at_time { "10:00" }
+    ends_at_time { "17:00" }
+    hourly_rate_cents { 3000 }
   end
 
   factory :reservation do

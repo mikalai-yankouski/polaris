@@ -1,0 +1,20 @@
+<tr class="price-rule-fields" data-new-record="<%= f.object.new_record? %>">
+  <td class="pr-3 py-1">
+    <%= f.select :day_kind,
+          options_for_select(PriceRule.day_kinds.keys.map { |k| [I18n.t(k, scope: "day_kinds"), k] }, f.object.day_kind),
+          {}, { class: "rounded-lg border border-slate-300 px-2 py-1.5 text-sm" } %>
+  </td>
+  <td class="pr-3 py-1 whitespace-nowrap">
+    <%= f.time_select :starts_at_time, { minute_step: 30, ignore_date: true }, { class: "rounded-lg border border-slate-300 px-1 py-1.5 text-sm" } %>
+    —
+    <%= f.time_select :ends_at_time, { minute_step: 30, ignore_date: true }, { class: "rounded-lg border border-slate-300 px-1 py-1.5 text-sm" } %>
+  </td>
+  <td class="pr-3 py-1">
+    <%= f.number_field :hourly_rate_cents, min: 100, step: 100, class: "w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-sm" %>
+  </td>
+  <td class="py-1 text-right">
+    <%= f.check_box :_destroy, class: "hidden" %>
+    <button type="button" data-action="price-rules#remove"
+            class="cursor-pointer rounded px-2 py-1 text-rose-600 hover:bg-rose-50" title="<%= t("admin.zones.form.remove_rule") %>">✕</button>
+  </td>
+</tr>

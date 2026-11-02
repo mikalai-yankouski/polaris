@@ -31,5 +31,11 @@
     </div>
   </div>
 
+  <label class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
+    <%= form.check_box :children_party, class: "rounded" %>
+    <%= Reservation.human_attribute_name(:children_party) %>
+    <span class="text-xs text-slate-400"><%= t("reservations.form.children_party_hint") %></span>
+  </label>
+
   <%= form.submit t("reservations.form.submit"), class: "w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500 sm:w-auto" %>
 <% end %>

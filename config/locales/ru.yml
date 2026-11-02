@@ -23,6 +23,15 @@ ru:
     member: "Член клуба"
     manager: "Менеджер"
     admin: "Администратор"
+  room_types:
+    lounge: "Лаундж"
+    cinema: "Кинокомната"
+    karaoke: "Караоке"
+    billiard: "Бильярд"
+    ps5: "PlayStation"
+  day_kinds:
+    weekday: "Будни"
+    weekend: "Выходные"
 
   pundit:
     default: "Недостаточно прав для этого действия"
@@ -33,12 +42,37 @@ ru:
     access_denied: "Доступ только для персонала"
     nav:
       dashboard: "Дашборд"
+      schedule: "Шахматка"
       reservations: "Брони"
       zones: "Зоны"
       amenities: "Удобства"
       users: "Пользователи"
+      reports: "Отчёты"
+    schedule:
+      show:
+        title: "Шахматка занятости"
+        today: "Сегодня"
+        cleaning: "Уборка после брони «%{zone}»"
+        legend_confirmed: "подтверждена"
+        legend_pending: "на рассмотрении"
+        legend_cleaning: "уборка"
+        legend_free: "свободно"
+    reports:
+      sheet_name: "Занятые часы"
+      room_type: "Тип"
+      bookings: "Броней"
+      hours: "Часов"
+      revenue: "Выручка"
+      total: "Итого"
+      room_hours:
+        title: "Занятые часы по комнатам"
+        from: "С"
+        to: "По"
+        apply: "Показать"
+        export: "Excel"
     dashboard:
       show:
+        active_now: "Сейчас в комнатах"
         title: "Аналитика за 30 дней"
         total_reservations: "Броней"
         total_guests: "Гостей всего"
@@ -72,6 +106,8 @@ ru:
         cancelled: "Бронь %{name} отменена"
       complete:
         completed: "Бронь %{name} завершена"
+      extend:
+        extended: "Бронь продлена на %{minutes} мин., итоговая стоимость %{total}"
     zones:
       index:
         title: "Зоны"
@@ -89,6 +125,13 @@ ru:
         destroyed: "Зона удалена"
       form:
         submit: "Сохранить"
+        children_party_hint: "После детских — уборка 30 минут вместо стандартной"
+        adjacency_hint: "Смежные комнаты: караоке-брони не ставим в соседние одновременно"
+        price_rules: "Тарифная сетка (будни/выходные × время суток)"
+        price_rules_hint: "Цена за час в копейках; минуты вне окон тарифицируются базовой ставкой комнаты"
+        time_window: "Окно времени"
+        add_rule: "добавить тариф"
+        remove_rule: "Удалить"
     amenities:
       index:
         title: "Удобства"
@@ -156,6 +199,7 @@ ru:
       ends_at: "Завершение"
       guests_count: "Гостей"
       purpose: "Цель (необязательно)"
+      children_party_hint: "после брони — уборка 30 минут"
       submit: "Забронировать"
 
   registrations:
@@ -231,6 +275,10 @@ ru:
         amenities: "Удобства"
         photos: "Фото"
         building: "Здание"
+        room_type: "Тип комнаты"
+        building_code: "Номер комнаты"
+        cleaning_buffer_minutes: "Буфер уборки (мин)"
+        adjacent_zones: "Смежные комнаты"
       reservation:
         zone: "Зона"
         user: "Автор"
@@ -241,6 +289,12 @@ ru:
         status: "Статус"
         total_price_cents: "Стоимость"
         review_note: "Комментарий"
+        children_party: "Детское мероприятие"
+      price_rule:
+        day_kind: "Будни/выходные"
+        starts_at_time: "Начало окна"
+        ends_at_time: "Конец окна"
+        hourly_rate_cents: "Ставка, коп./час"
       amenity:
         name: "Название"
       building:
@@ -251,11 +305,14 @@ ru:
       messages:
         before_start: "должно быть позже начала"
         in_past: "не может быть в прошлом"
-        slot_taken: "занято: на это время уже есть активная бронь"
+        slot_taken: "занято: на это время уже есть активная бронь (с учётом уборки)"
         duration_too_short: "слишком короткая бронь (минимум %{min} ч)"
         duration_too_long: "слишком долгая бронь (максимум %{max} ч)"
         over_capacity: "превышает вместимость зоны (%{capacity})"
         inactive: "недоступна для бронирования"
         invalid_transition: "нельзя сменить статус «%{status}» на «%{new_status}»"
         less_than_min_duration: "должна быть не меньше минимальной"
+        adjacent_karaoke: "в смежной комнате уже есть караоке-бронь на это время (правило звукоизоляции)"
+        empty_window: "окно не может быть пустым"
+        overlap: "окна тарифов одного типа дней не должны пересекаться"
         blank: "не может быть пустым"

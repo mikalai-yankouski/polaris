@@ -1,6 +1,7 @@
 <nav class="mb-8 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm">
-  <% %i[dashboard reservations zones amenities users].each do |item| %>
+  <% %i[dashboard schedule reservations zones amenities users].each do |item| %>
     <% path = item == :dashboard ? admin_root_path : public_send("admin_#{item}_path") %>
     <%= nav_link t("admin.nav.#{item}"), path %>
   <% end %>
+  <%= nav_link t("admin.nav.reports"), admin_room_hours_report_path %>
 </nav>

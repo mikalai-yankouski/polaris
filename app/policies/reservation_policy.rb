@@ -10,6 +10,7 @@ class ReservationPolicy < ApplicationPolicy
   def confirm?  = staff? && record.confirmable?
   def decline?  = staff? && record.declinable?
   def complete? = staff? && record.completable?
+  def extend?   = staff? && record.extendable?
 
   def destroy? = admin?
 

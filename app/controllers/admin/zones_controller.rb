@@ -45,7 +45,9 @@ module Admin
     def zone_params
       params.require(:zone).permit(:building_id, :name, :description, :capacity, :floor,
                                    :hourly_rate_cents, :min_duration_minutes, :max_duration_minutes,
-                                   :requires_approval, :active, amenity_ids: [], photos: [])
+                                   :requires_approval, :active, :room_type, :building_code,
+                                   :cleaning_buffer_minutes, amenity_ids: [], adjacent_zone_ids: [],
+                                   photos: [], price_rules_attributes: %i[id day_kind starts_at_time(1i) starts_at_time(2i) starts_at_time(3i) starts_at_time(4i) starts_at_time(5i) ends_at_time(1i) ends_at_time(2i) ends_at_time(3i) ends_at_time(4i) ends_at_time(5i) hourly_rate_cents _destroy])
     end
 
     def set_zone

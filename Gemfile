@@ -29,6 +29,8 @@ gem "pundit"
 gem "chartkick"
 # Group temporal data for analytics [https://github.com/ankane/groupdate]
 gem "groupdate"
+# Excel (xlsx) export for reports [https://github.com/caxlsx/caxlsx]
+gem "caxlsx"
 
 # Russian locales for Rails [https://github.com/svenfuchs/rails-i18n]
 gem "rails-i18n", "~> 8.0"

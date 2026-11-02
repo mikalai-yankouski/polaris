@@ -14,12 +14,15 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root "dashboard#show"
+    get "schedule", to: "schedule#show", as: :schedule
+    get "reports/room_hours", to: "reports#room_hours", as: :room_hours_report
     resources :reservations, only: :index do
       member do
         post :confirm
         post :decline
         post :cancel
         post :complete
+        post :extend
       end
     end
     resources :zones, except: :show

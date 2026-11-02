@@ -5,6 +5,9 @@ class Reservation < ApplicationRecord
     "confirmed" => %w[cancelled completed].freeze
   }.freeze
 
+  # Детское мероприятие: увеличенный буфер уборки
+  CHILDREN_CLEANING_MINUTES = 30
+
   belongs_to :zone
   belongs_to :user
 
@@ -12,6 +15,7 @@ class Reservation < ApplicationRecord
 
   scope :blocking, -> { where(status: [ statuses[:pending], statuses[:confirmed] ]) }
   scope :upcoming, -> { blocking.where(ends_at: Time.current..).order(:starts_at) }
+  scope :active_now, -> { blocking.where(starts_at: ..Time.current).where(ends_at: Time.current..).order(:ends_at) }
   scope :between, ->(range) { where(starts_at: range) }
   scope :paid, -> { where(status: [ statuses[:confirmed], statuses[:completed] ]) }
 
@@ -23,9 +27,11 @@ class Reservation < ApplicationRecord
   validate :guests_within_capacity
   validate :zone_is_active, on: :create
   validate :review_note_present_when_declining
-  validate :no_overlapping_reservation, on: :create
+  validate :no_overlapping_reservation
+  validate :no_adjacent_karaoke_conflict, on: :create
 
-  before_validation :compute_price
+  before_validation :compute_price, if: -> { new_record? }
+  before_validation :snapshot_cleaning_minutes
   after_create :auto_approve, if: -> { zone && !zone.requires_approval }
 
   def duration_minutes
@@ -34,10 +40,16 @@ class Reservation < ApplicationRecord
     ((ends_at - starts_at) / 60).to_i
   end
 
+  # Окно, на которое комната фактически занята (бронь + уборка)
+  def blocked_until = ends_at + cleaning_minutes.minutes
+
+  def running? = starts_at <= Time.current && Time.current < ends_at
+
   def confirmable?  = pending?
   def declinable?   = pending?
   def cancellable?  = pending? || confirmed?
   def completable?  = confirmed? && ends_at < Time.current
+  def extendable?   = pending? || confirmed?
 
   def status_label(value = status)
     I18n.t(value, scope: "reservation_statuses", default: value.to_s.humanize)
@@ -63,6 +75,20 @@ class Reservation < ApplicationRecord
     update!(status: :completed)
   end
 
+  # Продление на месте: шаг minutes минут, доплата за добавленный интервал
+  # по действующим тарифам. Цена исходного интервала не пересчитывается.
+  def extend!(minutes)
+    raise ActiveRecord::RecordInvalid.new(self) unless extendable?
+
+    new_ends_at = ends_at + minutes.minutes
+    extra_cents = Reservations::PriceCalculator.new(zone:).total_cents(ends_at, new_ends_at)
+    self.ends_at = new_ends_at
+    self.total_price_cents += extra_cents
+    save!
+  rescue ActiveRecord::RecordInvalid
+    raise
+  end
+
   private
 
     def assert_transition!(to_status)
@@ -81,7 +107,13 @@ class Reservation < ApplicationRecord
     def compute_price
       return unless zone && starts_at && ends_at && errors.empty?
 
-      self.total_price_cents = (zone.hourly_rate_cents * duration_minutes / 60.0).round
+      self.total_price_cents = Reservations::PriceCalculator.new(zone:).total_cents(starts_at, ends_at)
+    end
+
+    def snapshot_cleaning_minutes
+      return unless zone
+
+      self.cleaning_minutes = zone.cleaning_minutes_for(children_party: children_party?)
     end
 
     def ends_after_start
@@ -119,23 +151,36 @@ class Reservation < ApplicationRecord
     end
 
     def review_note_present_when_declining
-      # Применяем и на create (auto_approve путь не проходит через decline), и на update
       return unless will_save_change_to_status? && status == "declined" && review_note.blank?
 
       errors.add(:review_note, :blank)
     end
 
-    # Дружелюбная проверка перед записью; окончательная гарантия —
-    # exclusion constraint reservations_no_overlaps на уровне PostgreSQL.
+    # Дружелюбная проверка перед записью (с учётом буфера уборки, без себя);
+    # окончательная гарантия — exclusion constraint reservations_no_overlaps.
     def no_overlapping_reservation
       return unless zone && starts_at && ends_at && errors.empty?
 
-      conflicts = Reservation.blocking
-                             .where(zone_id: zone_id)
-                             .where(starts_at: ...ends_at)
-                             .where("ends_at > ?", starts_at)
-                             .exists?
-      errors.add(:starts_at, :slot_taken) if conflicts
+      scope = Reservation.blocking
+                         .where(zone_id: zone_id)
+                         .where(starts_at: ...blocked_until)
+                         .where("ends_at + make_interval(mins => cleaning_minutes) > ?", starts_at)
+      scope = scope.where.not(id: id) if persisted?
+      errors.add(:starts_at, :slot_taken) if scope.exists?
+    end
+
+    # Правило звукоизоляции: две караоке-брони не ставим в соседние комнаты
+    # одновременно (проверяем на создание; администратор видит шахматку)
+    def no_adjacent_karaoke_conflict
+      return unless zone&.karaoke? && starts_at && ends_at && errors.empty?
+
+      conflict = Reservation.blocking
+                            .joins(:zone)
+                            .where(zones: { id: zone.adjacent_zone_ids, room_type: Zone.room_types[:karaoke] })
+                            .where(starts_at: ...blocked_until)
+                            .where("reservations.ends_at + make_interval(mins => reservations.cleaning_minutes) > ?", starts_at)
+                            .exists?
+      errors.add(:base, :adjacent_karaoke) if conflict
     end
 
     # Зоны без модерации подтверждаются автоматически

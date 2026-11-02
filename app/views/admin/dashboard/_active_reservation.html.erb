@@ -1,0 +1,15 @@
+<div class="rounded-2xl border border-slate-200 bg-white p-4"
+     data-controller="countdown"
+     data-countdown-ends-at-value="<%= reservation.ends_at.iso8601 %>"
+     data-countdown-warning-seconds-value="600"
+     data-base-class="rounded-2xl border border-slate-200 bg-white p-4"
+     data-warning-class="rounded-2xl border border-amber-300 bg-amber-50 p-4"
+     data-overdue-class="rounded-2xl border border-rose-400 bg-rose-50 p-4">
+  <div class="flex items-center justify-between gap-3">
+    <div>
+      <p class="font-semibold text-slate-900"><%= reservation.zone %> <span class="text-xs font-normal text-slate-400">до <%= l(reservation.ends_at, format: :time_only) %></span></p>
+      <p class="text-sm text-slate-500"><%= reservation.user %> · <%= reservation.guests_count %> чел.</p>
+    </div>
+    <p data-countdown-target="label" class="font-mono text-2xl font-bold tabular-nums text-slate-900">--:--</p>
+  </div>
+</div>

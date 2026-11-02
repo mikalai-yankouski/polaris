@@ -71,4 +71,69 @@ RSpec.describe "Admin", type: :request do
       expect(target.reload).to be_member
     end
   end
+
+  describe "GET /admin/schedule" do
+    it "renders the occupancy grid" do
+      sign_in create(:user, :manager)
+      zone = create(:zone, name: "Кинокомната")
+      day = 3.days.from_now
+      create(:reservation, :confirmed, zone:,
+             starts_at: day.change(hour: 12, min: 0), ends_at: day.change(hour: 14, min: 0))
+
+      get admin_schedule_path(date: day.to_date)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Кинокомната")
+    end
+  end
+
+  describe "POST /admin/reservations/:id/extend" do
+    it "extends a booking by 30 minutes" do
+      sign_in create(:user, :manager)
+      reservation = create(:reservation, :confirmed)
+
+      expect {
+        post extend_admin_reservation_path(reservation, minutes: 30)
+      }.to change { reservation.reload.ends_at }
+
+      expect(reservation.ends_at).to eq(reservation.starts_at + 2.5.hours)
+      expect(response).to redirect_to(admin_reservations_path)
+    end
+
+    it "refuses extension into a conflict" do
+      sign_in create(:user, :manager)
+      reservation = create(:reservation, :confirmed)
+      create(:reservation, :confirmed, zone: reservation.zone,
+             starts_at: reservation.ends_at + 15.minutes, ends_at: reservation.ends_at + 3.hours)
+
+      post extend_admin_reservation_path(reservation, minutes: 30)
+
+      expect(response).to redirect_to(admin_reservations_path)
+      expect(flash[:alert]).to be_present
+    end
+  end
+
+  describe "GET /admin/reports/room_hours" do
+    it "renders the html report" do
+      sign_in create(:user, :admin)
+
+      get admin_room_hours_report_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Занятые часы")
+    end
+
+    it "exports xlsx" do
+      sign_in create(:user, :admin)
+      zone = create(:zone)
+      create(:reservation, :confirmed, zone:,
+             starts_at: Time.zone.parse("2030-01-01 10:00"), ends_at: Time.zone.parse("2030-01-01 13:00"))
+
+      get admin_room_hours_report_path(format: :xlsx, from: "2029-12-31", to: "2030-01-02")
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to include("spreadsheetml")
+      expect(response.body.byteslice(0, 2)).to eq("PK") # zip-магия xlsx
+    end
+  end
 end

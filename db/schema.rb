@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_081500) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_090003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -30,6 +30,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_081500) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "price_rules", force: :cascade do |t|
+    t.bigint "zone_id", null: false
+    t.integer "day_kind", default: 0, null: false
+    t.time "starts_at_time", null: false
+    t.time "ends_at_time", null: false
+    t.integer "hourly_rate_cents", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["zone_id", "day_kind"], name: "index_price_rules_on_zone_id_and_day_kind"
+    t.index ["zone_id"], name: "index_price_rules_on_zone_id"
+  end
+
   create_table "reservations", force: :cascade do |t|
     t.bigint "zone_id", null: false
     t.bigint "user_id", null: false
@@ -43,12 +55,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_081500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "reminder_sent_at"
+    t.boolean "children_party", default: false, null: false
+    t.integer "cleaning_minutes", default: 15, null: false
     t.index ["status"], name: "index_reservations_on_status"
     t.index ["user_id", "created_at"], name: "index_reservations_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_reservations_on_user_id"
     t.index ["zone_id", "starts_at"], name: "index_reservations_on_zone_id_and_starts_at"
     t.index ["zone_id"], name: "index_reservations_on_zone_id"
-    t.exclusion_constraint "zone_id WITH =, tsrange(starts_at, ends_at, '[)'::text) WITH &&", where: "status = ANY (ARRAY[0, 1])", using: :gist, name: "reservations_no_overlaps"
+    t.exclusion_constraint "zone_id WITH =, tsrange(starts_at, (ends_at + make_interval(mins => cleaning_minutes)), '[)'::text) WITH &&", where: "status = ANY (ARRAY[0, 1])", using: :gist, name: "reservations_no_overlaps"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -69,6 +83,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_081500) do
     t.string "phone"
     t.integer "role", default: 0, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
+  end
+
+  create_table "zone_adjacencies", force: :cascade do |t|
+    t.bigint "zone_id", null: false
+    t.bigint "adjacent_zone_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adjacent_zone_id"], name: "index_zone_adjacencies_on_adjacent_zone_id"
+    t.index ["zone_id", "adjacent_zone_id"], name: "index_zone_adjacencies_on_zone_id_and_adjacent_zone_id", unique: true
+    t.index ["zone_id"], name: "index_zone_adjacencies_on_zone_id"
   end
 
   create_table "zone_amenities", force: :cascade do |t|
@@ -94,13 +118,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_081500) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "room_type", default: 0, null: false
+    t.string "building_code"
+    t.integer "cleaning_buffer_minutes", default: 15, null: false
     t.index ["building_id"], name: "index_zones_on_building_id"
     t.index ["name"], name: "index_zones_on_name", unique: true
   end
 
+  add_foreign_key "price_rules", "zones"
   add_foreign_key "reservations", "users"
   add_foreign_key "reservations", "zones"
   add_foreign_key "sessions", "users"
+  add_foreign_key "zone_adjacencies", "zones"
+  add_foreign_key "zone_adjacencies", "zones", column: "adjacent_zone_id"
   add_foreign_key "zone_amenities", "amenities"
   add_foreign_key "zone_amenities", "zones"
   add_foreign_key "zones", "buildings"
