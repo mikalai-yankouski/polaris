@@ -8,13 +8,18 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user
+  helper_method :current_user, :admin_section?
   before_action :set_current_user
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
   private
+
+    # Админка остаётся на классическом светлом chrome
+    def admin_section?
+      is_a?(Admin::BaseController)
+    end
 
     def current_user
       Current.user

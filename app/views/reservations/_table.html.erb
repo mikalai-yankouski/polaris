@@ -1,43 +1,43 @@
-<table class="w-full text-left text-sm">
-  <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+<table class="table-dark">
+  <thead>
     <tr>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:zone) %></th>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:starts_at) %></th>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:ends_at) %></th>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:guests_count) %></th>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:total_price_cents) %></th>
-      <th class="px-4 py-3"><%= Reservation.human_attribute_name(:status) %></th>
-      <th class="px-4 py-3"><%= t("payments.title") %></th>
-      <% if cancellable %><th class="px-4 py-3"></th><% end %>
+      <th><%= Reservation.human_attribute_name(:zone) %></th>
+      <th><%= Reservation.human_attribute_name(:starts_at) %></th>
+      <th><%= Reservation.human_attribute_name(:ends_at) %></th>
+      <th><%= Reservation.human_attribute_name(:guests_count) %></th>
+      <th><%= Reservation.human_attribute_name(:total_price_cents) %></th>
+      <th><%= Reservation.human_attribute_name(:status) %></th>
+      <th><%= t("payments.title") %></th>
+      <% if cancellable %><th><span class="sr-only"><%= t("reservations.index.cancel") %></span></th><% end %>
     </tr>
   </thead>
-  <tbody class="divide-y divide-slate-100">
+  <tbody>
     <% reservations.each do |reservation| %>
       <tr>
-        <td class="px-4 py-3 font-medium text-slate-900"><%= link_to reservation.zone, zone_path(reservation.zone) %></td>
-        <td class="px-4 py-3"><%= l(reservation.starts_at, format: :short) %></td>
-        <td class="px-4 py-3"><%= l(reservation.ends_at, format: :short) %></td>
-        <td class="px-4 py-3"><%= reservation.guests_count %></td>
-        <td class="px-4 py-3"><%= money(reservation.total_price_cents) %></td>
-        <td class="px-4 py-3">
+        <td class="font-medium text-white"><%= link_to reservation.zone, zone_path(reservation.zone), class: "link-aurora" %></td>
+        <td class="num"><%= l(reservation.starts_at, format: :short) %></td>
+        <td class="num"><%= l(reservation.ends_at, format: :short) %></td>
+        <td class="num"><%= reservation.guests_count %></td>
+        <td class="num font-semibold text-star-300"><%= money(reservation.total_price_cents) %></td>
+        <td>
           <%= status_badge(reservation) %>
           <% if reservation.review_note.present? %>
-            <span class="mt-1 block text-xs text-slate-400"><%= reservation.review_note %></span>
+            <span class="mt-1 block text-xs text-slate-500"><%= reservation.review_note %></span>
           <% end %>
         </td>
-        <td class="px-4 py-3">
+        <td>
           <%= payment_badge(reservation) %>
           <% if reservation.payable? && policy(reservation).pay? %>
             <%= button_to t("payments.pay"), reservation_payment_path(reservation), method: :post,
-                  class: "mt-1 cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-800" %>
+                  class: "mt-1.5 cursor-pointer text-xs font-semibold text-aurora-300 transition-colors hover:text-white" %>
           <% end %>
         </td>
         <% if cancellable %>
-          <td class="px-4 py-3 text-right">
+          <td class="text-right">
             <% if reservation.cancellable? %>
               <%= button_to t("reservations.index.cancel"), cancel_reservation_path(reservation), method: :post,
                     data: { turbo_confirm: t("reservations.index.cancel_confirm") },
-                    class: "cursor-pointer text-xs font-medium text-rose-600 hover:text-rose-800" %>
+                    class: "link-danger cursor-pointer text-xs" %>
             <% end %>
           </td>
         <% end %>

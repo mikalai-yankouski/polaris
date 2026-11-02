@@ -1,65 +1,119 @@
-<div class="mb-8 flex flex-wrap items-start justify-between gap-4">
-  <div>
-    <h1 class="text-3xl font-bold text-slate-900"><%= @zone %></h1>
-    <p class="mt-2 max-w-2xl text-slate-500"><%= @zone.description %></p>
+<% photo = @zone.photos.attached? ? @zone.photos.first : nil %>
+
+<%# ---------- Кинематографичный баннер зоны ---------- %>
+<section class="relative mx-auto max-w-6xl px-4">
+  <div class="zone-card beam reveal min-h-[19rem] sm:min-h-[23rem]">
+    <div class="art <%= photo ? "" : "art--#{@zone.room_type}" %>">
+      <% if photo %>
+        <%= image_tag photo, alt: "" %>
+      <% else %>
+        <span class="art-glow"></span>
+        <%= icon @zone.room_type.to_sym, css_class: "art-icon" %>
+      <% end %>
+    </div>
+    <div class="scrim"></div>
+
+    <span class="chip chip--gold absolute right-5 top-5 z-10 !px-4 !py-2 !text-sm">
+      <%= t(".price", amount: money(@zone.hourly_rate_cents)) %>
+    </span>
+
+    <div class="relative z-10 p-7 sm:p-9">
+      <div class="mb-4 flex flex-wrap gap-2">
+        <span class="chip"><%= icon @zone.room_type.to_sym %> <%= @zone.room_type_label %></span>
+        <span class="chip"><%= icon :users %> <%= t("zones.index.capacity", count: @zone.capacity) %></span>
+        <span class="chip"><%= icon :building %> <%= t("zones.index.floor", count: @zone.floor) %></span>
+      </div>
+      <h1 class="display-2 text-white"><%= @zone %></h1>
+      <% if @zone.description.present? %>
+        <p class="mt-3 max-w-2xl leading-relaxed text-slate-300"><%= @zone.description %></p>
+      <% end %>
+    </div>
   </div>
-  <span class="whitespace-nowrap rounded-full bg-indigo-50 px-4 py-2 font-semibold text-indigo-700">
-    <%= t(".price", amount: money(@zone.hourly_rate_cents)) %>
-  </span>
-</div>
+</section>
 
-<div class="grid gap-8 lg:grid-cols-2">
-  <section class="rounded-2xl border border-slate-200 bg-white p-6">
-    <h2 class="text-lg font-semibold text-slate-900"><%= t(".book") %></h2>
+<div class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-6 px-4 py-10 lg:grid-cols-[1.05fr_minmax(0,1fr)]">
+  <%# ---------- Бронирование: sticky-карта с живым расчётом ---------- %>
+  <section class="glass-deep reveal min-w-0 p-6 sm:p-8 lg:sticky lg:top-28">
+    <div class="flex items-center justify-between gap-4">
+      <h2 class="heading-display text-xl font-semibold text-white"><%= t(".book") %></h2>
+      <span class="flex items-center gap-1.5 text-xs font-medium <%= @zone.requires_approval ? "text-star-300" : "text-emerald-300" %>">
+        <%= icon (@zone.requires_approval ? :shield : :check_circle), css_class: "h-3.5 w-3.5" %>
+        <%= @zone.requires_approval ? t(".approval_required_short") : t(".auto_confirm_short") %>
+      </span>
+    </div>
 
-    <ul class="mt-3 space-y-1 text-sm text-slate-500">
-      <li><%= t("zones.index.capacity", count: @zone.capacity) %></li>
-      <li><%= t(".min_duration", duration: duration_text(@zone.min_duration_minutes)) %></li>
-      <li><%= t(".max_duration", duration: duration_text(@zone.max_duration_minutes)) %></li>
-    </ul>
+    <% if authenticated? %>
+      <% if Bepaid::Config.configured? %>
+        <p class="mt-4 flex items-start gap-2.5 rounded-xl border border-aurora-300/20 bg-aurora-500/10 px-4 py-3 text-sm text-aurora-300">
+          <%= icon :credit_card, css_class: "mt-0.5 h-4 w-4 shrink-0" %>
+          <%= t(".prepayment_note") %>
+        </p>
+      <% end %>
+      <%= render "reservations/form", zone: @zone, reservation: @reservation %>
+    <% else %>
+      <p class="mt-5 text-sm leading-relaxed text-slate-400"><%= t(".sign_in_to_book") %></p>
+      <p class="mt-6">
+        <%= link_to new_session_path, class: "btn btn--aurora" do %>
+          <%= t("layouts.nav.sign_in") %>
+          <%= icon :arrow_right, css_class: "h-4 w-4" %>
+        <% end %>
+      </p>
+    <% end %>
+  </section>
+
+  <%# ---------- Правая колонка: правила, удобства, занятость ---------- %>
+  <div class="min-w-0 space-y-6">
+    <div class="glass spotlight reveal p-6" style="--reveal-delay: .05s">
+      <p class="kicker"><%= t(".rules") %></p>
+      <ul class="mt-4 space-y-3 text-sm">
+        <li class="flex items-center gap-3 text-slate-300">
+          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-aurora-300" %>
+          <%= t(".min_duration", duration: duration_text(@zone.min_duration_minutes)) %>
+        </li>
+        <li class="flex items-center gap-3 text-slate-300">
+          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-slate-500" %>
+          <%= t(".max_duration", duration: duration_text(@zone.max_duration_minutes)) %>
+        </li>
+        <li class="flex items-center gap-3 text-slate-300">
+          <%= icon :calendar, css_class: "h-4 w-4 shrink-0 text-slate-500" %>
+          <%= @zone.requires_approval ? t(".approval_required") : t(".auto_confirm") %>
+        </li>
+      </ul>
+    </div>
 
     <% if @zone.amenities.any? %>
-      <div class="mt-4">
-        <h3 class="text-sm font-semibold text-slate-700"><%= t(".amenities") %></h3>
-        <div class="mt-2 flex flex-wrap gap-2 text-xs">
+      <div class="glass spotlight reveal p-6" style="--reveal-delay: .1s">
+        <p class="kicker"><%= t(".amenities") %></p>
+        <div class="mt-4 flex flex-wrap gap-2">
           <% @zone.amenities.each do |amenity| %>
-            <span class="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600"><%= amenity %></span>
+            <span class="chip"><%= icon :sparkle, css_class: "h-3 w-3" %> <%= amenity %></span>
           <% end %>
         </div>
       </div>
     <% end %>
 
-    <p class="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm <%= @zone.requires_approval ? "text-amber-700" : "text-emerald-700" %>">
-      <%= @zone.requires_approval ? t(".approval_required") : t(".auto_confirm") %>
-    </p>
-
-    <% if authenticated? %>
-      <% if Bepaid::Config.configured? %>
-        <p class="mt-4 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700"><%= t("zones.show.prepayment_note") %></p>
+    <div class="reveal" style="--reveal-delay: .15s">
+      <div class="mb-4 flex items-center justify-between">
+        <p class="kicker"><%= t(".upcoming") %></p>
+      </div>
+      <% if @reservations.any? %>
+        <div class="glass divide-y divide-white/[0.06] px-6">
+          <% @reservations.each do |reservation| %>
+            <div class="flex items-center justify-between gap-4 py-4 text-sm">
+              <span class="flex items-center gap-2.5 font-medium text-slate-200">
+                <%= icon :calendar, css_class: "h-4 w-4 text-slate-500" %>
+                <%= l(reservation.starts_at, format: :short) %> — <%= l(reservation.ends_at, format: :time_only) %>
+              </span>
+              <%= status_badge(reservation) %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="glass flex items-center gap-3 p-5 text-sm text-emerald-300">
+          <%= icon :check_circle, css_class: "h-5 w-5 shrink-0" %>
+          <%= t(".no_upcoming") %>
+        </p>
       <% end %>
-      <%= render "reservations/form", zone: @zone, reservation: @reservation %>
-    <% else %>
-      <p class="mt-6">
-        <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "inline-block rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500" %>
-      </p>
-    <% end %>
-  </section>
-
-  <section class="rounded-2xl border border-slate-200 bg-white p-6">
-    <h2 class="text-lg font-semibold text-slate-900"><%= t(".upcoming") %></h2>
-    <% if @reservations.any? %>
-      <ul class="mt-4 divide-y divide-slate-100 text-sm">
-        <% @reservations.each do |reservation| %>
-          <li class="flex items-center justify-between gap-4 py-3">
-            <span class="font-medium text-slate-700">
-              <%= l(reservation.starts_at, format: :short) %> — <%= l(reservation.ends_at, format: :time_only) %>
-            </span>
-            <%= status_badge(reservation) %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700"><%= t(".no_upcoming") %></p>
-    <% end %>
-  </section>
+    </div>
+  </div>
 </div>

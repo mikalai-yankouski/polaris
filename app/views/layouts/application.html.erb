@@ -15,57 +15,134 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <% if admin_section? %>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <% else %>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Unbounded:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <% end %>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
-    <header class="border-b border-slate-200 bg-white">
-      <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
-        <%= link_to root_path, class: "flex items-center gap-2 text-lg font-bold text-slate-900" do %>
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">P</span>
-          <%= t("app_name") %>
-        <% end %>
+  <% if admin_section? %>
+    <body class="theme-admin min-h-screen bg-slate-50 text-slate-800 antialiased">
+      <header class="border-b border-slate-200 bg-white">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
+          <%= link_to root_path, class: "flex items-center gap-2 text-lg font-bold text-slate-900" do %>
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">P</span>
+            <%= t("app_name") %> <span class="text-sm font-medium text-slate-400">/ <%= t("layouts.nav.admin") %></span>
+          <% end %>
 
-        <nav class="flex items-center gap-6 text-sm">
-          <%= nav_link t("layouts.nav.zones"), zones_path %>
-          <% if authenticated? %>
-            <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
-            <% if current_user&.staff? %>
+          <nav class="flex items-center gap-6 text-sm">
+            <%= nav_link t("layouts.nav.zones"), zones_path %>
+            <% if authenticated? %>
+              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
               <%= nav_link t("layouts.nav.admin"), admin_root_path %>
             <% end %>
-          <% end %>
-        </nav>
+          </nav>
 
-        <div class="ml-auto flex items-center gap-4 text-sm">
-          <% if authenticated? %>
-            <span class="text-slate-500"><%= current_user %></span>
-            <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer font-medium text-slate-600 hover:text-slate-900" %>
-          <% else %>
-            <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "font-medium text-slate-600 hover:text-slate-900" %>
-            <%= link_to t("layouts.nav.sign_up"), new_registration_path, class: "rounded-lg bg-indigo-600 px-3.5 py-2 font-medium text-white hover:bg-indigo-500" %>
+          <div class="ml-auto flex items-center gap-4 text-sm">
+            <% if authenticated? %>
+              <span class="text-slate-500"><%= current_user %></span>
+              <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer font-medium text-slate-600 hover:text-slate-900" %>
+            <% end %>
+          </div>
+        </div>
+      </header>
+
+      <main class="mx-auto max-w-7xl px-4 py-8">
+        <%= render "admin/shared/nav" %>
+
+        <% if (notice = flash[:notice]) %>
+          <p class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 font-medium text-emerald-700" id="notice"><%= notice %></p>
+        <% end %>
+        <% if (alert = flash[:alert]) %>
+          <p class="mb-6 rounded-xl bg-rose-50 px-4 py-3 font-medium text-rose-700" id="alert"><%= alert %></p>
+        <% end %>
+
+        <%= yield %>
+      </main>
+    </body>
+  <% else %>
+    <body class="theme-dark min-h-screen antialiased">
+      <%# Живое небо: звёзды, аврора, зерно %>
+      <div class="sky" aria-hidden="true">
+        <div class="stars stars--sm"></div>
+        <div class="stars stars--md"></div>
+        <div class="aurora aurora--violet"></div>
+        <div class="aurora aurora--teal"></div>
+        <div class="aurora aurora--indigo"></div>
+      </div>
+      <div class="grain" aria-hidden="true"></div>
+
+      <%# Плавающий нав-остров %>
+      <div class="nav-shell">
+        <div class="nav-pill">
+          <%= link_to root_path, class: "logo-mark" do %>
+            <span class="logo-gem"><%= icon :sparkle, css_class: "h-4 w-4" %></span>
+            <span class="heading-display text-[0.95rem] font-semibold tracking-wide text-white"><%= t("app_name") %></span>
           <% end %>
+
+          <nav class="flex items-center gap-6">
+            <%= nav_link t("layouts.nav.zones"), zones_path %>
+            <% if authenticated? %>
+              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
+              <% if current_user&.staff? %>
+                <%= nav_link t("layouts.nav.admin"), admin_root_path %>
+              <% end %>
+            <% end %>
+          </nav>
+
+          <div class="flex items-center gap-3">
+            <% if authenticated? %>
+              <span class="hidden text-sm text-slate-400 md:inline"><%= current_user %></span>
+              <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer text-sm font-medium text-slate-400 transition-colors hover:text-white" %>
+            <% else %>
+              <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "text-sm font-medium text-slate-300 transition-colors hover:text-white" %>
+              <%= link_to t("layouts.nav.sign_up"), new_registration_path, class: "btn btn--aurora !rounded-full !px-4 !py-2 !text-sm" %>
+            <% end %>
+          </div>
         </div>
       </div>
-    </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-8">
-      <%= render "admin/shared/nav" if controller.is_a?(Admin::BaseController) %>
+      <main class="pt-28">
+        <% if (notice = flash[:notice]) %>
+          <div class="mx-auto max-w-6xl px-4">
+            <p class="flash flash--notice mb-6" id="notice"><%= notice %></p>
+          </div>
+        <% end %>
+        <% if (alert = flash[:alert]) %>
+          <div class="mx-auto max-w-6xl px-4">
+            <p class="flash flash--alert mb-6" id="alert"><%= alert %></p>
+          </div>
+        <% end %>
 
-      <% if (notice = flash[:notice]) %>
-        <p class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 font-medium text-emerald-700" id="notice"><%= notice %></p>
-      <% end %>
-      <% if (alert = flash[:alert]) %>
-        <p class="mb-6 rounded-xl bg-rose-50 px-4 py-3 font-medium text-rose-700" id="alert"><%= alert %></p>
-      <% end %>
+        <%= yield %>
+      </main>
 
-      <%= yield %>
-    </main>
-
-    <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-400">
-      <%= t("app_name") %> — <%= t("tagline") %>
-    </footer>
-  </body>
+      <footer class="relative mt-24">
+        <div class="hairline"></div>
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-10">
+          <div class="logo-mark">
+            <span class="logo-gem"><%= icon :sparkle, css_class: "h-3.5 w-3.5" %></span>
+            <div>
+              <span class="heading-display block text-sm font-medium text-slate-200"><%= t("app_name") %></span>
+              <span class="text-xs text-slate-500"><%= t("tagline") %></span>
+            </div>
+          </div>
+          <nav class="flex items-center gap-6 text-sm">
+            <%= nav_link t("layouts.nav.zones"), zones_path %>
+            <% if authenticated? %>
+              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
+            <% end %>
+          </nav>
+        </div>
+      </footer>
+    </body>
+  <% end %>
 </html>

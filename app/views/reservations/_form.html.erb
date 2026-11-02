@@ -1,6 +1,13 @@
-<%= form_with model: [zone, reservation], url: zone_reservations_path(zone), class: "mt-6 space-y-4" do |form| %>
+<%= form_with model: [zone, reservation], url: zone_reservations_path(zone),
+      class: "mt-6 space-y-5",
+      data: {
+        controller: "booking",
+        booking_rules_value: zone.price_rules.map { |r| { day_kind: r.day_kind, start_minutes: r.start_minutes, end_minutes: r.end_minutes, rate: r.hourly_rate_cents } }.to_json,
+        booking_base_rate_value: zone.hourly_rate_cents,
+        booking_currency_value: "BYN"
+      } do |form| %>
   <% if reservation.errors.any? %>
-    <div class="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+    <div class="flash flash--alert">
       <ul class="list-inside list-disc">
         <% reservation.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -9,33 +16,49 @@
     </div>
   <% end %>
 
-  <div class="grid gap-4 sm:grid-cols-2">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
     <div>
-      <%= form.label :starts_at, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.datetime_local_field :starts_at, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :starts_at, class: "label" %>
+      <%= form.datetime_local_field :starts_at, required: true,
+            class: "field", data: { booking_target: "startsAt", action: "input->booking#recalculate" } %>
     </div>
     <div>
-      <%= form.label :ends_at, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.datetime_local_field :ends_at, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
-    </div>
-  </div>
-
-  <div class="grid gap-4 sm:grid-cols-2">
-    <div>
-      <%= form.label :guests_count, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :guests_count, min: 1, max: zone.capacity, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
-    </div>
-    <div>
-      <%= form.label :purpose, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.text_field :purpose, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :ends_at, class: "label" %>
+      <%= form.datetime_local_field :ends_at, required: true,
+            class: "field", data: { booking_target: "endsAt", action: "input->booking#recalculate" } %>
     </div>
   </div>
 
-  <label class="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
-    <%= form.check_box :children_party, class: "rounded" %>
-    <%= Reservation.human_attribute_name(:children_party) %>
-    <span class="text-xs text-slate-400"><%= t("reservations.form.children_party_hint") %></span>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :guests_count, class: "label" %>
+      <%= form.number_field :guests_count, min: 1, max: zone.capacity, required: true, class: "field" %>
+    </div>
+    <div>
+      <%= form.label :purpose, class: "label" %>
+      <%= form.text_field :purpose, class: "field" %>
+    </div>
+  </div>
+
+  <%# Живой расчёт: длительность и стоимость по тарифной сетке ---------- %>
+  <div data-booking-target="summary" class="calc-box hidden px-5 py-4">
+    <div class="flex items-center gap-2.5 text-sm text-slate-300">
+      <%= icon :clock, css_class: "h-4 w-4 text-star-400" %>
+      <span data-booking-target="duration" class="font-medium text-white"></span>
+    </div>
+    <div class="text-right">
+      <span class="block text-[0.65rem] font-semibold uppercase tracking-widest text-slate-500"><%= t(".calc_total") %></span>
+      <span data-booking-target="total" class="heading-display text-lg font-semibold text-star-300"></span>
+    </div>
+  </div>
+
+  <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-sm text-slate-300 transition-colors hover:border-white/20">
+    <%= form.check_box :children_party, class: "mt-0.5" %>
+    <span>
+      <span class="font-medium"><%= Reservation.human_attribute_name(:children_party) %></span>
+      <span class="mt-0.5 block text-xs text-slate-500"><%= t("reservations.form.children_party_hint") %></span>
+    </span>
   </label>
 
-  <%= form.submit t("reservations.form.submit"), class: "w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500 sm:w-auto" %>
+  <%= form.submit t(".submit"), class: "btn btn--aurora w-full sm:w-auto" %>
 <% end %>

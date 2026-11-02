@@ -1,14 +1,19 @@
-<div class="mx-auto max-w-md">
-  <h1 class="mb-6 text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+<div class="mx-auto max-w-md pt-8">
+  <div class="mb-8 text-center">
+    <span class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-star-400/30 bg-star-500/10 text-star-400 shadow-[0_0_40px_-8px_rgba(228,188,99,0.55)]">
+      <%= icon :sparkle, css_class: "h-6 w-6" %>
+    </span>
+    <h1 class="heading-display text-2xl font-semibold text-white"><%= t(".title") %></h1>
+  </div>
 
-  <div class="rounded-2xl border border-slate-200 bg-white p-6">
+  <div class="glass hero-rise p-6 sm:p-8" style="--reveal-delay: .1s">
     <%= form_with url: passwords_path do |form| %>
       <div>
-        <%= form.label :email_address, class: "block text-sm font-medium text-slate-700" %>
-        <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address], class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+        <%= form.label :email_address, t("activerecord.attributes.user.email_address"), class: "label" %>
+        <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address], class: "field" %>
       </div>
 
-      <%= form.submit t(".submit"), class: "mt-6 w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500" %>
+      <%= form.submit t(".submit"), class: "btn btn--aurora mt-6 w-full" %>
     <% end %>
   </div>
 </div>
