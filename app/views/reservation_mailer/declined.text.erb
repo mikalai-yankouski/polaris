@@ -1,0 +1,8 @@
+<%= t(".heading") %>
+
+<%= t(".body", zone: @reservation.zone, starts: l(@reservation.starts_at, format: :short)) %>
+<%= t(".reason", note: @reservation.review_note) if @reservation.review_note.present? %>
+
+<%= zones_url %>
+
+<%= t(".footer") %>

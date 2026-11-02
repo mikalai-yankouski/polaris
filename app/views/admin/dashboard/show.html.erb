@@ -1,0 +1,53 @@
+<div class="mb-8 flex items-end justify-between">
+  <h1 class="text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+  <%= link_to t("admin.nav.reservations"), admin_reservations_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800" %>
+</div>
+
+<div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <%= render "stat_card", label: t(".total_reservations"), value: @dashboard.total_reservations %>
+  <%= render "stat_card", label: t(".total_guests"), value: @dashboard.total_guests %>
+  <%= render "stat_card", label: t(".revenue"), value: money(@dashboard.revenue_cents) %>
+  <%= render "stat_card", label: t(".utilization"), value: number_to_percentage(@dashboard.avg_utilization, precision: 1) %>
+</div>
+
+<% if @dashboard.total_reservations.zero? %>
+  <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400"><%= t(".empty") %></p>
+<% else %>
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".reservations_by_day") %></h2>
+      <%= line_chart @dashboard.reservations_by_day, colors: ["#4f46e5"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".revenue_by_week") %></h2>
+      <%= column_chart @dashboard.revenue_by_week.map { |week, cents| [week, cents / 100.0] },
+            suffix: " BYN", colors: ["#0ea5e9"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".bookings_by_weekday") %></h2>
+      <%= column_chart @dashboard.bookings_by_weekday, colors: ["#f59e0b"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".bookings_by_hour") %></h2>
+      <%= column_chart @dashboard.bookings_by_hour, colors: ["#10b981"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".status_breakdown") %></h2>
+      <%= pie_chart @dashboard.status_breakdown %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".top_zones") %></h2>
+      <%= bar_chart @dashboard.top_zones, colors: ["#4f46e5"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
+      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".utilization_by_zone") %></h2>
+      <%= bar_chart @dashboard.utilization_by_zone, suffix: "%", colors: ["#8b5cf6"], library: { plugins: { legend: { display: false } } } %>
+    </section>
+  </div>
+<% end %>

@@ -1,0 +1,80 @@
+<h1 class="mb-6 text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+
+<%= form_with url: admin_reservations_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4" do |form| %>
+  <div>
+    <%= form.label :status, t(".filter_status"), class: "block text-xs font-medium uppercase text-slate-500" %>
+    <%= form.select :status,
+          options_for_select(Reservation.statuses.keys.map { |s| [Reservation.new(status: s).status_label, s] }, params[:status]),
+          { include_blank: t(".all") },
+          onchange: "this.form.requestSubmit()", class: "mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :zone_id, t(".filter_zone"), class: "block text-xs font-medium uppercase text-slate-500" %>
+    <%= form.select :zone_id,
+          options_from_collection_for_select(@zones, :id, :name, params[:zone_id]),
+          { include_blank: t(".all") },
+          onchange: "this.form.requestSubmit()", class: "mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+  </div>
+<% end %>
+
+<% if @reservations.any? %>
+  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:zone) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:user) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:starts_at) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:ends_at) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:guests_count) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:purpose) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:total_price_cents) %></th>
+          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:status) %></th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% @reservations.each do |reservation| %>
+          <tr>
+            <td class="px-4 py-3 font-medium text-slate-900"><%= reservation.zone %></td>
+            <td class="px-4 py-3">
+              <%= reservation.user %>
+              <span class="block text-xs text-slate-400"><%= reservation.user.email_address %></span>
+            </td>
+            <td class="px-4 py-3"><%= l(reservation.starts_at, format: :short) %></td>
+            <td class="px-4 py-3"><%= l(reservation.ends_at, format: :short) %></td>
+            <td class="px-4 py-3"><%= reservation.guests_count %></td>
+            <td class="px-4 py-3 max-w-40 truncate text-slate-500"><%= reservation.purpose %></td>
+            <td class="px-4 py-3"><%= money(reservation.total_price_cents) %></td>
+            <td class="px-4 py-3"><%= status_badge(reservation) %></td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2 text-xs">
+                <% if reservation.confirmable? %>
+                  <%= button_to t(".confirm"), confirm_admin_reservation_path(reservation), method: :post,
+                        class: "cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 font-medium text-white hover:bg-emerald-500" %>
+                <% end %>
+                <% if reservation.declinable? %>
+                  <%= button_to t(".decline"), decline_admin_reservation_path(reservation), method: :post,
+                        form: { data: { turbo_confirm: "Причина отклонения?" } },
+                        class: "cursor-pointer rounded-lg bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-500" %>
+                <% end %>
+                <% if reservation.completable? %>
+                  <%= button_to t(".complete"), complete_admin_reservation_path(reservation), method: :post,
+                        class: "cursor-pointer rounded-lg bg-sky-600 px-3 py-1.5 font-medium text-white hover:bg-sky-500" %>
+                <% end %>
+                <% if reservation.cancellable? %>
+                  <%= button_to t(".cancel"), cancel_admin_reservation_path(reservation), method: :post,
+                        form: { data: { turbo_confirm: "Отменить бронь?" } },
+                        class: "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50" %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400"><%= t(".empty") %></p>
+<% end %>

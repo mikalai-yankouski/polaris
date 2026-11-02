@@ -1,0 +1,11 @@
+<h1><%= t(".heading") %></h1>
+
+<p><%= t(".body", zone: @reservation.zone, starts: l(@reservation.starts_at, format: :short)) %></p>
+
+<% if @reservation.review_note.present? %>
+  <p><%= t(".reason", note: @reservation.review_note) %></p>
+<% end %>
+
+<p><%= link_to t("zones.index.title"), zones_url %></p>
+
+<p style="color: #888; font-size: 12px;"><%= t(".footer") %></p>

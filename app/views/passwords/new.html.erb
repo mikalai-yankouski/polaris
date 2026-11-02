@@ -1,0 +1,14 @@
+<div class="mx-auto max-w-md">
+  <h1 class="mb-6 text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+
+  <div class="rounded-2xl border border-slate-200 bg-white p-6">
+    <%= form_with url: passwords_path do |form| %>
+      <div>
+        <%= form.label :email_address, class: "block text-sm font-medium text-slate-700" %>
+        <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", value: params[:email_address], class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      </div>
+
+      <%= form.submit t(".submit"), class: "mt-6 w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500" %>
+    <% end %>
+  </div>
+</div>

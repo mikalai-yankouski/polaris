@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || t("app_name") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="<%= t("app_name") %>">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <header class="border-b border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
+        <%= link_to root_path, class: "flex items-center gap-2 text-lg font-bold text-slate-900" do %>
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">P</span>
+          <%= t("app_name") %>
+        <% end %>
+
+        <nav class="flex items-center gap-6 text-sm">
+          <%= nav_link t("layouts.nav.zones"), zones_path %>
+          <% if authenticated? %>
+            <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
+            <% if current_user&.staff? %>
+              <%= nav_link t("layouts.nav.admin"), admin_root_path %>
+            <% end %>
+          <% end %>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-4 text-sm">
+          <% if authenticated? %>
+            <span class="text-slate-500"><%= current_user %></span>
+            <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer font-medium text-slate-600 hover:text-slate-900" %>
+          <% else %>
+            <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "font-medium text-slate-600 hover:text-slate-900" %>
+            <%= link_to t("layouts.nav.sign_up"), new_registration_path, class: "rounded-lg bg-indigo-600 px-3.5 py-2 font-medium text-white hover:bg-indigo-500" %>
+          <% end %>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-4 py-8">
+      <%= render "admin/shared/nav" if controller.is_a?(Admin::BaseController) %>
+
+      <% if (notice = flash[:notice]) %>
+        <p class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 font-medium text-emerald-700" id="notice"><%= notice %></p>
+      <% end %>
+      <% if (alert = flash[:alert]) %>
+        <p class="mb-6 rounded-xl bg-rose-50 px-4 py-3 font-medium text-rose-700" id="alert"><%= alert %></p>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-400">
+      <%= t("app_name") %> — <%= t("tagline") %>
+    </footer>
+  </body>
+</html>

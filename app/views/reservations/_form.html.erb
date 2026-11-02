@@ -1,0 +1,35 @@
+<%= form_with model: [zone, reservation], url: zone_reservations_path(zone), class: "mt-6 space-y-4" do |form| %>
+  <% if reservation.errors.any? %>
+    <div class="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      <ul class="list-inside list-disc">
+        <% reservation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :starts_at, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.datetime_local_field :starts_at, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+    </div>
+    <div>
+      <%= form.label :ends_at, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.datetime_local_field :ends_at, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <%= form.label :guests_count, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.number_field :guests_count, min: 1, max: zone.capacity, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+    </div>
+    <div>
+      <%= form.label :purpose, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.text_field :purpose, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+    </div>
+  </div>
+
+  <%= form.submit t("reservations.form.submit"), class: "w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500 sm:w-auto" %>
+<% end %>

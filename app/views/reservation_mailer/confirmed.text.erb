@@ -1,0 +1,7 @@
+<%= t(".heading") %>
+
+<%= t(".body", zone: @reservation.zone, starts: l(@reservation.starts_at, format: :short), ends: l(@reservation.ends_at, format: :time_only)) %>
+
+<%= reservations_url %>
+
+<%= t(".footer") %>

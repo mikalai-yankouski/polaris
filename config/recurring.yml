@@ -1,0 +1,5 @@
+# Recurring tasks run by Solid Queue's dispatcher (production).
+production:
+  reservation_reminders:
+    command: "ReservationRemindersJob.perform_later"
+    schedule: every day at 10:00

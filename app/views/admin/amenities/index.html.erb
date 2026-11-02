@@ -1,0 +1,36 @@
+<h1 class="mb-6 text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+
+<div class="mb-6 max-w-xl rounded-2xl border border-slate-200 bg-white p-4">
+  <%= form_with model: @amenity, url: admin_amenities_path do |form| %>
+    <% if @amenity.errors.any? %>
+      <p class="mb-3 text-sm text-rose-600"><%= @amenity.errors.full_messages.to_sentence %></p>
+    <% end %>
+    <div class="flex gap-3">
+      <%= form.text_field :name, required: true, placeholder: t(".new_placeholder"),
+            class: "block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.submit t(".add"), class: "cursor-pointer whitespace-nowrap rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500" %>
+    </div>
+  <% end %>
+</div>
+
+<% if @amenities.any? %>
+  <div class="max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <ul class="divide-y divide-slate-100 text-sm">
+      <% @amenities.each do |amenity| %>
+        <li class="flex items-center justify-between px-4 py-3">
+          <span class="font-medium text-slate-900"><%= amenity %>
+            <span class="ml-2 text-xs text-slate-400"><%= amenity.zones.count %> <%= t(".zones_count") %></span>
+          </span>
+          <div class="flex items-center gap-3">
+            <%= link_to t("admin.zones.form.submit"), edit_admin_amenity_path(amenity), class: "font-medium text-indigo-600 hover:text-indigo-800" %>
+            <% if policy(amenity).destroy? %>
+              <%= button_to "✕", admin_amenity_path(amenity), method: :delete,
+                    form: { data: { turbo_confirm: "Удалить «#{amenity}»?" } },
+                    class: "cursor-pointer text-rose-600 hover:text-rose-800" %>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

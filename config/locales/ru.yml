@@ -1,0 +1,261 @@
+ru:
+  app_name: "Polaris"
+  tagline: "Бронирование лаундж-зон"
+  hours_short: "ч"
+  minutes_short: "мин"
+
+  time:
+    formats:
+      short: "%d.%m.%Y %H:%M"
+      time_only: "%H:%M"
+
+  errors:
+    not_found: "Запись не найдена"
+
+  # Словари значений enum'ов (не в activerecord.attributes — там hash ломает human_attribute_name)
+  reservation_statuses:
+    pending: "На рассмотрении"
+    confirmed: "Подтверждена"
+    declined: "Отклонена"
+    cancelled: "Отменена"
+    completed: "Завершена"
+  user_roles:
+    member: "Член клуба"
+    manager: "Менеджер"
+    admin: "Администратор"
+
+  pundit:
+    default: "Недостаточно прав для этого действия"
+    reservation_policy:
+      error: "Вы не можете управлять этой бронью"
+
+  admin:
+    access_denied: "Доступ только для персонала"
+    nav:
+      dashboard: "Дашборд"
+      reservations: "Брони"
+      zones: "Зоны"
+      amenities: "Удобства"
+      users: "Пользователи"
+    dashboard:
+      show:
+        title: "Аналитика за 30 дней"
+        total_reservations: "Броней"
+        total_guests: "Гостей всего"
+        revenue: "Выручка"
+        utilization: "Средняя загрузка"
+        reservations_by_day: "Брони по дням"
+        revenue_by_week: "Выручка по неделям"
+        bookings_by_weekday: "Брони по дням недели"
+        bookings_by_hour: "Пиковые часы"
+        status_breakdown: "Статусы броней"
+        top_zones: "Популярные зоны"
+        utilization_by_zone: "Загрузка зон, %"
+        empty: "Пока недостаточно данных — создайте брони"
+    reservations:
+      index:
+        title: "Управление бронями"
+        filter_status: "Статус"
+        filter_zone: "Зона"
+        all: "Все"
+        confirm: "Подтвердить"
+        decline: "Отклонить"
+        cancel: "Отменить"
+        complete: "Завершить"
+        empty: "Броней не найдено"
+      confirm:
+        confirmed: "Бронь %{name} подтверждена"
+      decline:
+        declined: "Бронь %{name} отклонена"
+        default_note: "Зона недоступна в указанное время"
+      cancel:
+        cancelled: "Бронь %{name} отменена"
+      complete:
+        completed: "Бронь %{name} завершена"
+    zones:
+      index:
+        title: "Зоны"
+        new: "Добавить зону"
+        empty: "Зон пока нет"
+      new:
+        title: "Новая зона"
+      edit:
+        title: "Редактирование зоны"
+      create:
+        created: "Зона создана"
+      update:
+        updated: "Зона обновлена"
+      destroy:
+        destroyed: "Зона удалена"
+      form:
+        submit: "Сохранить"
+    amenities:
+      index:
+        title: "Удобства"
+        new_placeholder: "Например: Проектор"
+        add: "Добавить"
+        zones_count: "зон"
+      create:
+        created: "Удобство добавлено"
+      update:
+        updated: "Удобство обновлено"
+      destroy:
+        destroyed: "Удобство удалено"
+        in_use: "Нельзя удалить: удобство используется в зонах"
+    users:
+      index:
+        title: "Пользователи"
+        reservations_count: "броней"
+      update:
+        updated: "Роль %{name} обновлена"
+
+  layouts:
+    nav:
+      zones: "Лаундж-зоны"
+      my_reservations: "Мои брони"
+      admin: "Админка"
+      sign_in: "Войти"
+      sign_up: "Регистрация"
+      sign_out: "Выйти"
+
+  zones:
+    index:
+      title: "Лаундж-зоны"
+      subtitle: "Выберите пространство и забронируйте его на удобное время"
+      empty: "Активных зон пока нет"
+      capacity: "до %{count} гостей"
+      floor: "%{count} этаж"
+    show:
+      book: "Забронировать"
+      price: "%{amount} / час"
+      min_duration: "Минимальная длительность — %{duration}"
+      max_duration: "Максимальная длительность — %{duration}"
+      approval_required: "Бронь требует подтверждения администратора"
+      auto_confirm: "Бронь подтверждается автоматически"
+      upcoming: "Занятость"
+      no_upcoming: "Свободна — предстоящих броней нет"
+      guests_capacity: "вместимость"
+      amenities: "Удобства"
+
+  reservations:
+    index:
+      title: "Мои брони"
+      upcoming: "Предстоящие"
+      past: "История"
+      empty_upcoming: "Предстоящих броней нет"
+      empty_past: "История пуста"
+      cancel: "Отменить"
+      cancel_confirm: "Отменить бронь?"
+    create:
+      created: "Заявка создана — следите за статусом в разделе «Мои брони»"
+    cancel:
+      cancelled: "Бронь отменена"
+    form:
+      title: "Бронирование зоны"
+      starts_at: "Начало"
+      ends_at: "Завершение"
+      guests_count: "Гостей"
+      purpose: "Цель (необязательно)"
+      submit: "Забронировать"
+
+  registrations:
+    new:
+      title: "Регистрация"
+      submit: "Зарегистрироваться"
+    create:
+      welcome: "Добро пожаловать! Ваш аккаунт создан."
+
+  sessions:
+    new:
+      title: "Вход"
+      submit: "Войти"
+      sign_up_hint: "Нет аккаунта?"
+
+  passwords:
+    new:
+      title: "Восстановление пароля"
+      submit: "Отправить ссылку"
+      forgot: "Забыли пароль?"
+    edit:
+      title: "Новый пароль"
+      submit: "Сохранить пароль"
+
+  reservation_mailer:
+    submitted:
+      subject: "Заявка на бронирование «%{zone}» принята"
+      heading: "Ваша заявка принята!"
+      body: "Заявка на бронирование зоны «%{zone}» на %{starts} отправлена на рассмотрение. Мы сообщим, когда её подтвердят."
+    confirmed:
+      subject: "Бронь «%{zone}» подтверждена"
+      heading: "Ваша бронь подтверждена"
+      body: "Зона «%{zone}» забронирована на %{starts}–%{ends}. Ждём вас!"
+    declined:
+      subject: "Заявка на «%{zone}» отклонена"
+      heading: "К сожалению, заявка отклонена"
+      body: "Заявка на «%{zone}» на %{starts} отклонена."
+      reason: "Причина: %{note}"
+    reminder:
+      subject: "Напоминание: «%{zone}» завтра"
+      heading: "Скоро ваша встреча"
+      body: "Напоминаем: бронь зоны «%{zone}» на %{starts}. До встречи!"
+    footer: "Это автоматическое письмо приложения Polaris."
+
+  activerecord:
+    models:
+      zone: "Зона"
+      zones: "Зоны"
+      reservation: "Бронь"
+      reservations: "Брони"
+      user: "Пользователь"
+      users: "Пользователи"
+      building: "Здание"
+      amenity: "Удобство"
+    attributes:
+      user:
+        name: "Имя"
+        email_address: "Email"
+        phone: "Телефон"
+        password: "Пароль"
+        password_confirmation: "Подтверждение пароля"
+        role: "Роль"
+      zone:
+        name: "Название"
+        description: "Описание"
+        capacity: "Вместимость"
+        floor: "Этаж"
+        hourly_rate_cents: "Цена за час"
+        min_duration_minutes: "Мин. длительность (мин)"
+        max_duration_minutes: "Макс. длительность (мин)"
+        requires_approval: "Требует подтверждения"
+        active: "Активна"
+        amenities: "Удобства"
+        photos: "Фото"
+        building: "Здание"
+      reservation:
+        zone: "Зона"
+        user: "Автор"
+        starts_at: "Начало"
+        ends_at: "Завершение"
+        guests_count: "Гостей"
+        purpose: "Цель"
+        status: "Статус"
+        total_price_cents: "Стоимость"
+        review_note: "Комментарий"
+      amenity:
+        name: "Название"
+      building:
+        name: "Название"
+        address: "Адрес"
+        description: "Описание"
+    errors:
+      messages:
+        before_start: "должно быть позже начала"
+        in_past: "не может быть в прошлом"
+        slot_taken: "занято: на это время уже есть активная бронь"
+        duration_too_short: "слишком короткая бронь (минимум %{min} ч)"
+        duration_too_long: "слишком долгая бронь (максимум %{max} ч)"
+        over_capacity: "превышает вместимость зоны (%{capacity})"
+        inactive: "недоступна для бронирования"
+        invalid_transition: "нельзя сменить статус «%{status}» на «%{new_status}»"
+        less_than_min_duration: "должна быть не меньше минимальной"
+        blank: "не может быть пустым"
