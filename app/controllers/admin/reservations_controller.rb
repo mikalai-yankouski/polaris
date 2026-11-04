@@ -71,7 +71,7 @@ module Admin
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
 
-      # Заявка без времени: согласовали слот по телефону — назначаем и считаем цену
+    # Заявка без времени: согласовали слот по телефону — назначаем и считаем цену
     def assign_time
       authorize @reservation
       starts_at = Time.zone.parse(params[:starts_at]) if params[:starts_at].present?

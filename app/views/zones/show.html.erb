@@ -1,3 +1,4 @@
+<% if night_design? %>
 <% photo = @zone.cover_photo %>
 
 <%# ---------- Кинематографичный баннер зоны ---------- %>
@@ -23,7 +24,7 @@
         <span class="chip"><%= icon :users %> <%= t("zones.index.capacity", count: @zone.capacity) %></span>
         <span class="chip"><%= icon :building %> <%= t("zones.index.floor", count: @zone.floor) %></span>
       </div>
-      <h1 class="display-2 text-white"><%= @zone %></h1>
+      <h1 class="display-2 text-white"><%= @zone.name %></h1>
       <% if @zone.description.present? %>
         <p class="mt-3 max-w-2xl leading-relaxed text-slate-300"><%= @zone.description %></p>
       <% end %>
@@ -83,3 +84,87 @@
     <% end %>
   </div>
 </div>
+<% else %>
+<% photo = @zone.cover_photo %>
+
+<%# ---------- Шапка зала: компактная, форма сразу видна ---------- %>
+<section class="mx-auto max-w-6xl px-4 pt-10">
+  <div class="reveal flex flex-wrap items-end justify-between gap-4">
+    <div class="min-w-0">
+      <p class="tag"><%= @zone.room_type_label %> · <%= t("zones.index.floor", count: @zone.floor) %> · <%= t("zones.index.capacity", count: @zone.capacity) %></p>
+      <h1 class="display-2 mt-3"><%= @zone.name %></h1>
+      <% if @zone.description.present? %>
+        <p class="mt-3 max-w-2xl leading-relaxed text-ink-soft"><%= @zone.description %></p>
+      <% end %>
+    </div>
+    <p class="plate-price !text-base"><%= t(".price", amount: money(@zone.hourly_rate_cents)) %></p>
+  </div>
+</section>
+
+<div class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+  <%# ---------- Бронирование: «окно в ночь» с живым расчётом, первым на экране ---------- %>
+  <section class="night-panel reveal min-w-0 p-6 sm:p-8 lg:sticky lg:top-24">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="heading-display text-xl font-semibold text-white"><%= t(".book") %></h2>
+      <span class="flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] <%= @zone.requires_approval ? "text-star-300" : "text-emerald-300" %>">
+        <%= icon (@zone.requires_approval ? :shield : :check_circle), css_class: "h-3.5 w-3.5" %>
+        <%= @zone.requires_approval ? t(".approval_required_short") : t(".auto_confirm_short") %>
+      </span>
+    </div>
+
+    <% if Bepaid::Config.configured? %>
+      <p class="mt-4 flex items-start gap-2.5 border border-aurora-300/20 bg-aurora-500/10 px-4 py-3 text-sm text-aurora-300">
+        <%= icon :credit_card, css_class: "mt-0.5 h-4 w-4 shrink-0" %>
+        <%= t(".prepayment_note") %>
+      </p>
+    <% end %>
+    <%= render "reservations/form", zone: @zone, reservation: @reservation %>
+  </section>
+
+  <%# ---------- Правая колонка: фото-планшет, правила, удобства ---------- %>
+  <div class="min-w-0 space-y-6">
+    <figure class="plate reveal overflow-hidden" style="--reveal-delay: .05s">
+      <div class="plate-media <%= photo ? "" : "plate--#{@zone.room_type}" %> !aspect-[4/3]">
+        <% if photo %>
+          <%= image_tag photo, alt: @zone.to_s %>
+        <% else %>
+          <span class="plate-art"><%= icon @zone.room_type.to_sym %></span>
+        <% end %>
+      </div>
+      <figcaption class="plate-caption !border-b-0">
+        <span><%= t(".plate_caption") %></span>
+        <span><%= @zone.building_code %></span>
+      </figcaption>
+    </figure>
+
+    <div class="reveal border border-ink/25 bg-paper-card p-6" style="--reveal-delay: .1s">
+      <p class="tag"><%= t(".rules") %></p>
+      <ul class="mt-4 space-y-3 text-sm">
+        <li class="flex items-center gap-3 text-ink">
+          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-atlas-blue" %>
+          <%= t(".min_duration", duration: duration_text(@zone.min_duration_minutes)) %>
+        </li>
+        <li class="flex items-center gap-3 text-ink">
+          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-ink-soft" %>
+          <%= t(".max_duration", duration: duration_text(@zone.max_duration_minutes)) %>
+        </li>
+        <li class="flex items-center gap-3 text-ink">
+          <%= icon :calendar, css_class: "h-4 w-4 shrink-0 text-ink-soft" %>
+          <%= @zone.requires_approval ? t(".approval_required") : t(".auto_confirm") %>
+        </li>
+      </ul>
+    </div>
+
+    <% if @zone.amenities.any? %>
+      <div class="reveal border border-ink/25 bg-paper-card p-6" style="--reveal-delay: .15s">
+        <p class="tag"><%= t(".amenities") %></p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <% @zone.amenities.each do |amenity| %>
+            <span class="border border-ink/30 bg-paper px-3 py-1 font-mono text-[0.7rem] uppercase tracking-[0.08em] text-ink-soft"><%= amenity %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% end %>

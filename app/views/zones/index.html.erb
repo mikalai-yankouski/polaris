@@ -1,3 +1,4 @@
+<% if night_design? %>
 <%# ---------- Каталог пространств ---------- %>
 <section class="relative mx-auto max-w-6xl scroll-mt-28 overflow-x-clip px-4 pb-8 pt-6">
   <div class="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[42rem] max-w-[110vw] -translate-x-1/2 dots-bg" aria-hidden="true"></div>
@@ -40,7 +41,7 @@
                 <span class="chip"><%= icon :users %> <%= t(".capacity", count: zone.capacity) %></span>
                 <span class="chip hidden sm:inline-flex"><%= icon :building %> <%= t(".floor", count: zone.floor) %></span>
               </div>
-              <h2 class="heading-display <%= 'text-2xl sm:text-3xl' if featured %> text-xl font-semibold text-white"><%= zone %></h2>
+              <h2 class="heading-display <%= 'text-2xl sm:text-3xl' if featured %> text-xl font-semibold text-white"><%= zone.name %></h2>
               <% if zone.description.present? %>
                 <p class="mt-2 max-w-md text-sm leading-relaxed text-slate-300/90 <%= 'line-clamp-2' unless featured %>"><%= zone.description %></p>
               <% end %>
@@ -56,3 +57,49 @@
     <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
   <% end %>
 </section>
+<% else %>
+<%# ---------- Каталог залов: планшеты атласа ---------- %>
+<section class="mx-auto max-w-6xl overflow-x-clip px-4 pb-8 pt-10">
+  <div class="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="tag"><%= t(".kicker") %></p>
+      <h1 class="display-2 mt-3"><%= t(".title") %></h1>
+      <p class="mt-2 text-ink-soft"><%= t(".subtitle") %></p>
+    </div>
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-ink-soft"><%= t(".count", count: @zones.length) %></p>
+  </div>
+
+  <% if @zones.any? %>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <% @zones.each_with_index do |zone, i| %>
+        <% photo = zone.cover_photo %>
+        <%= link_to zone_path(zone), class: "plate reveal group", style: "--reveal-delay: #{(i % 3) * 0.08}s" do %>
+          <div class="plate-media <%= photo ? "" : "plate--#{zone.room_type}" %>">
+            <% if photo %>
+              <%= image_tag photo, alt: zone.to_s %>
+            <% else %>
+              <span class="plate-art"><%= icon zone.room_type.to_sym %></span>
+            <% end %>
+            <span class="plate-flag"><%= t("zones.show.price", amount: money(zone.hourly_rate_cents)) %></span>
+          </div>
+          <div class="plate-caption">
+            <span><%= t(".plate_no", no: format("%02d", i + 1)) %> · <%= zone.building_code || "#{zone.floor}эт" %></span>
+            <span><%= zone.room_type_label %></span>
+          </div>
+          <div class="plate-body">
+            <h2 class="plate-title"><%= zone.name %></h2>
+            <% if zone.description.present? %>
+              <p class="line-clamp-2 text-sm leading-relaxed text-ink-soft"><%= zone.description %></p>
+            <% end %>
+            <p class="mt-auto pt-2 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-atlas-blue transition-colors group-hover:text-ink">
+              <%= t(".book_plate") %> →
+            </p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="border border-dashed border-ink/30 p-12 text-center text-ink-soft"><%= t(".empty") %></p>
+  <% end %>
+</section>
+<% end %>

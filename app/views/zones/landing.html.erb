@@ -1,3 +1,4 @@
+<% if night_design? %>
 <%# ---------- Hero: созвездия ---------- %>
 <section class="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-4 pb-20 pt-4 text-center">
   <canvas id="constellation" class="pointer-events-none absolute inset-0 h-full w-full opacity-70" aria-hidden="true"></canvas>
@@ -46,7 +47,7 @@
 </section>
 
 <%# ---------- Тизер пространств ---------- %>
-<section class="relative mx-auto max-w-6xl px-4 py-20">
+<section class="relative mx-auto max-w-6xl overflow-x-clip px-4 py-20">
   <div class="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[42rem] max-w-[110vw] -translate-x-1/2 dots-bg" aria-hidden="true"></div>
 
   <div class="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
@@ -81,7 +82,7 @@
             <span class="chip"><%= icon zone.room_type.to_sym %> <%= zone.room_type_label %></span>
             <span class="chip"><%= icon :users %> <%= t("zones.index.capacity", count: zone.capacity) %></span>
           </div>
-          <h3 class="heading-display text-xl font-semibold text-white"><%= zone %></h3>
+          <h3 class="heading-display text-xl font-semibold text-white"><%= zone.name %></h3>
           <% if zone.description.present? %>
             <p class="mt-2 line-clamp-2 max-w-md text-sm leading-relaxed text-slate-300/90"><%= zone.description %></p>
           <% end %>
@@ -118,3 +119,104 @@
     <% end %>
   </div>
 </section>
+<% else %>
+<%# ---------- Hero: атлас с залами на первом экране ---------- %>
+<section class="relative overflow-hidden">
+  <%# Планисфера справа, уходит за край %>
+  <div class="pointer-events-none absolute -right-40 -top-40 hidden opacity-70 lg:block xl:-right-24" aria-hidden="true">
+    <%= render "shared/wheel", size: "h-[42rem] w-[42rem]" %>
+  </div>
+
+  <div class="relative mx-auto max-w-6xl px-4 pb-10 pt-16 sm:pt-20">
+    <p class="tag hero-rise" style="--reveal-delay: .05s">Залы клуба Polaris</p>
+
+    <h1 class="display-1 hero-rise mt-6 max-w-3xl" style="--reveal-delay: .15s">
+      Ваш вечер <%= content_tag :span, "по звёздам", class: "serif-italic text-atlas-blue" %>
+    </h1>
+
+    <p class="hero-rise mt-6 max-w-xl text-base leading-relaxed text-ink-soft sm:text-lg" style="--reveal-delay: .25s">
+      <%= t(".hero_subtitle") %>
+    </p>
+
+    <div class="hero-rise mt-9 flex flex-wrap items-center gap-4" style="--reveal-delay: .35s">
+      <%= link_to zones_path, class: "btn-ink !px-7 !py-3.5" do %>
+        <%= t(".hero_cta") %>
+      <% end %>
+      <%= link_to "#halls", class: "btn-line !px-7 !py-3.5", data: { turbo: false } do %>
+        <%= t(".hero_secondary") %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Залы сразу: первый экран — товар, а не логотип %>
+  <div id="halls" class="relative mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 pt-6">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <% @zones.first(3).each_with_index do |zone, i| %>
+        <%= link_to zone_path(zone), class: "plate hero-rise group", style: "--reveal-delay: #{0.4 + i * 0.12}s" do %>
+          <div class="plate-media <%= zone.photos.attached? ? "" : "plate--#{zone.room_type}" %>">
+            <% if zone.photos.attached? %>
+              <%= image_tag zone.photos.first, alt: zone.to_s %>
+            <% else %>
+              <span class="plate-art"><%= icon zone.room_type.to_sym %></span>
+            <% end %>
+            <span class="plate-flag"><%= t("zones.show.price", amount: money(zone.hourly_rate_cents)) %></span>
+          </div>
+          <div class="plate-caption">
+            <span><%= t(".plate_no", no: format("%02d", i + 1)) %> · <%= zone.building_code || "#{zone.floor}эт" %></span>
+            <span><%= zone.room_type_label %></span>
+          </div>
+          <div class="plate-body">
+            <h2 class="plate-title"><%= zone.name %></h2>
+            <% if zone.description.present? %>
+              <p class="line-clamp-2 text-sm leading-relaxed text-ink-soft"><%= zone.description %></p>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="hero-rise mt-8 flex items-center justify-between gap-4" style="--reveal-delay: .8s">
+      <p class="font-mono text-[0.7rem] uppercase tracking-[0.14em] text-ink-soft">
+        <%= t(".halls_count", count: @zones.size) %>
+      </p>
+      <%= link_to zones_path, class: "link-ink" do %>
+        <%= t(".all_zones") %> →
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ---------- Как это работает: строка-легенда атласа ---------- %>
+<section class="border-y border-ink/15 bg-paper-card/60">
+  <div class="mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-3 md:gap-10">
+    <% steps = [[t(".step_1_title"), t(".step_1_text")],
+                [t(".step_2_title"), t(".step_2_text")],
+                [t(".step_3_title"), t(".step_3_text")]] %>
+    <% steps.each_with_index do |(title, text), i| %>
+      <div class="reveal" style="--reveal-delay: <%= i * 0.1 %>s">
+        <div class="flex items-baseline gap-3">
+          <span class="font-mono text-sm text-atlas-blue"><%= format("%02d", i + 1) %></span>
+          <h3 class="font-display text-xl font-semibold text-ink"><%= title %></h3>
+        </div>
+        <p class="mt-3 text-sm leading-relaxed text-ink-soft"><%= text %></p>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<%# ---------- Финал: призыв ---------- %>
+<section class="relative mx-auto max-w-6xl overflow-x-clip px-4 py-20 text-center">
+  <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-40" aria-hidden="true">
+    <%= render "shared/wheel", size: "h-[36rem] w-[36rem]" %>
+  </div>
+  <p class="tag reveal justify-center"><%= t(".final_tag") %></p>
+  <h2 class="display-2 reveal mx-auto mt-5 max-w-2xl">
+    <%= t(".final_title") %> <span class="serif-italic text-atlas-blue"><%= t(".final_accent") %></span>
+  </h2>
+  <div class="reveal mt-9">
+    <%= link_to zones_path, class: "btn-ink !px-8 !py-4" do %>
+      <%= t(".final_cta") %>
+    <% end %>
+  </div>
+</section>
+<% end %>

@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user, :admin_section?
+  helper_method :current_user, :admin_section?, :night_design?
   before_action :set_current_user
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
@@ -19,6 +19,11 @@ class ApplicationController < ActionController::Base
     # Админка остаётся на классическом светлом chrome
     def admin_section?
       is_a?(Admin::BaseController)
+    end
+
+    # Две темы публичного сайта: «атлас» (светлая) и «ночное небо» (v1)
+    def night_design?
+      cookies[:design_theme] == "night"
     end
 
     def current_user

@@ -7,7 +7,7 @@ module Admin
       authorize :client
       # Заявка может прийти без времени (слот согласуется по телефону) — тогда
       # дату берём из requested_date: у клиента всегда есть первая и последняя дата
-      @clients = Reservation.where.not(guest_phone: [nil, ""])
+      @clients = Reservation.where.not(guest_phone: [ nil, "" ])
                             .group("regexp_replace(guest_phone, '\\D', '', 'g')")
                             .select(
                               "(ARRAY_REMOVE(ARRAY_AGG(guest_phone ORDER BY created_at DESC), NULL))[1] AS phone",

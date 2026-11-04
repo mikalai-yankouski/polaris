@@ -1,0 +1,57 @@
+<%# Планисфера: лайт-арт звёздное колесо. Параметр: size (классы), idSuffix %>
+<%
+  major_ticks = 12
+  minor_ticks = 72
+  rng = Random.new(7)
+  dots = Array.new(64) do
+    angle = rng.rand * 2 * Math::PI
+    radius = 120 + rng.rand * 210
+    { x: 300 + Math.cos(angle) * radius, y: 300 + Math.sin(angle) * radius, r: 0.7 + rng.rand * 1.6 }
+  end
+  constellations = [
+    [[300, 90], [360, 170], [430, 140], [500, 210]],
+    [[120, 260], [190, 300], [230, 380], [180, 440]],
+    [[470, 400], [520, 350], [560, 420]],
+    [[250, 480], [330, 460], [390, 500]]
+  ]
+%>
+<svg class="wheel <%= local_assigns[:size] %>" viewBox="0 0 600 600" fill="none" aria-hidden="true">
+  <%# внешнее кольцо с подписями секторов %>
+  <circle cx="300" cy="300" r="288" stroke="#191610" stroke-opacity=".55" stroke-width="1.5"/>
+  <circle cx="300" cy="300" r="252" stroke="#191610" stroke-opacity=".3" stroke-width="1"/>
+  <circle cx="300" cy="300" r="118" stroke="#191610" stroke-opacity=".3" stroke-width="1"/>
+  <circle cx="300" cy="300" r="70" stroke="#191610" stroke-opacity=".2" stroke-width="1"/>
+
+  <%# секторы %>
+  <% major_ticks.times do |i| %>
+    <% a = i * 360 / major_ticks %>
+    <line x1="300" y1="12" x2="300" y2="48" stroke="#191610" stroke-opacity=".55" stroke-width="1.5"
+          transform="rotate(<%= a %> 300 300)"/>
+  <% end %>
+  <% minor_ticks.times do |i| %>
+    <% next if (i * 5) % 30 == 0 %>
+    <line x1="300" y1="12" x2="300" y2="26" stroke="#191610" stroke-opacity=".3" stroke-width="1"
+          transform="rotate(<%= i * 5 %> 300 300)"/>
+  <% end %>
+
+  <%# созвездия %>
+  <% constellations.each do |points| %>
+    <polyline points="<%= points.map { |x, y| "#{x},#{y}" }.join(' ') %>"
+              stroke="#26357c" stroke-opacity=".5" stroke-width="1"/>
+  <% end %>
+
+  <%# звёзды %>
+  <% dots.each do |d| %>
+    <circle cx="<%= d[:x].round(1) %>" cy="<%= d[:y].round(1) %>" r="<%= d[:r].round(2) %>"
+            fill="#191610" fill-opacity="<%= (0.35 + d[:r] / 4).round(2) %>"/>
+  <% end %>
+
+  <%# Полярная звезда в центре %>
+  <g stroke="#26357c" stroke-width="1.4" stroke-linecap="round">
+    <line x1="300" y1="282" x2="300" y2="318"/>
+    <line x1="282" y1="300" x2="318" y2="300"/>
+    <line x1="288" y1="288" x2="312" y2="312" stroke-opacity=".55"/>
+    <line x1="312" y1="288" x2="288" y2="312" stroke-opacity=".55"/>
+  </g>
+  <circle cx="300" cy="300" r="5" fill="#26357c" fill-opacity=".85"/>
+</svg>

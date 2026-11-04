@@ -121,7 +121,27 @@ adjacency_pairs.each do |(a_code, b_code)|
   ZoneAdjacency.find_or_create_by!(zone: a, adjacent_zone: b)
   ZoneAdjacency.find_or_create_by!(zone: b, adjacent_zone: a)
 end
-puts "  zones: #{Zone.count}, price rules: #{PriceRule.count}, adjacencies: #{ZoneAdjacency.count}"
+
+# Фото залов (Pexels): привязываем один раз; сет недоступен — сид не падает
+zone_photos = {
+  "Кинокомната Большая" => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/d170a7f28cf4.jpg",
+  "Кинокомната Малая"   => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/5ea4d8449d1e.jpg",
+  "Караоке-холл"        => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/3898314f0aa0.jpg",
+  "Лаундж 2-1"          => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/4277c2b4a865.jpg",
+  "Бильярдная"          => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/e7b3869dc9ae.jpg",
+  "PlayStation"         => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/a3f997923c91.png",
+  "Кинокомната Премиум" => "https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/af55666aecac.jpg"
+}
+zone_photos.each do |name_part, url|
+  zone = Zone.find_by("name LIKE ?", "%#{name_part}%")
+  next unless zone && zone.photos.none?
+
+  zone.photos.attach(io: URI.parse(url).open, filename: File.basename(URI.parse(url).path))
+rescue StandardError => e
+  puts "  photo skipped for #{name_part}: #{e.class}"
+end
+photos_count = Zone.joins(:photos_attachments).distinct.count
+puts "  zones: #{Zone.count}, price rules: #{PriceRule.count}, adjacencies: #{ZoneAdjacency.count}, photos: #{photos_count}"
 
 # Демо-брони за последние 30 дней и на будущее — чтобы оживить дашборд
 random = Random.new(42)
