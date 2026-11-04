@@ -79,7 +79,7 @@ end
 
 group :test do
   # Extra matchers for model specs [https://github.com/thoughtbot/shoulda-matchers]
-  gem "shoulda-matchers", "~> 6.0"
+  gem "shoulda-matchers", "~> 7.0"
 end
 
 group :development do
