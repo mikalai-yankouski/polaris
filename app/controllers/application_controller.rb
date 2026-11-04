@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user, :admin_section?, :night_design?
+  helper_method :current_user, :admin_section?, :night_design?, :admin_dark?
   before_action :set_current_user
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
@@ -24,6 +24,11 @@ class ApplicationController < ActionController::Base
     # Две темы публичного сайта: «атлас» (светлая) и «ночное небо» (v1)
     def night_design?
       cookies[:design_theme] == "night"
+    end
+
+    # Тема админки: тёмная по умолчанию, светлая — по переключателю
+    def admin_dark?
+      cookies[:admin_theme] != "light"
     end
 
     def current_user

@@ -8,7 +8,7 @@
     <%= t("tagline") %>
   </p>
 
-  <h1 class="display-1 hero-rise mt-8 max-w-5xl text-white" style="--reveal-delay: .15s">
+  <h1 class="display-1 mt-8 max-w-5xl text-white" data-kinetic>
     <%= t(".hero_title") %>
     <span class="text-gradient-aurora block"><%= t(".hero_title_accent") %></span>
   </h1>
@@ -26,6 +26,10 @@
       <%= link_to t("layouts.nav.admin"), admin_root_path, class: "btn btn--ghost !px-6 !py-3.5" %>
     <% end %>
   </div>
+
+  <p class="hero-rise mt-8 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-slate-500" style="--reveal-delay: .5s" aria-hidden="true">
+    ✦ <%= t(".marginalia") %>
+  </p>
 
   <%# Стеклянная полоса статистики ---------- %>
   <div class="hero-rise absolute inset-x-0 bottom-0 flex justify-center px-4 pb-7" style="--reveal-delay: .55s">
@@ -46,8 +50,19 @@
   </div>
 </section>
 
-<%# ---------- Тизер пространств ---------- %>
-<section class="relative mx-auto max-w-6xl overflow-x-clip px-4 py-20">
+<%# ---------- Marquee форматов (ночь) ---------- %>
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <% 2.times do %>
+      <% %w[Кинокомнаты Караоке Бильярд PlayStation Лаундж].each do |item| %>
+        <span class="marquee-item"><%= item %> <span class="mq-star">✦</span></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<%# ---------- Тизер пространств: созвездие залов ---------- %>
+<section class="relative mx-auto max-w-6xl overflow-x-clip px-4 py-20" data-constellation-holder>
   <div class="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[42rem] max-w-[110vw] -translate-x-1/2 dots-bg" aria-hidden="true"></div>
 
   <div class="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
@@ -59,9 +74,9 @@
     <span class="chip chip--gold"><%= icon :sparkle %> <%= t("zones.index.count", count: @zones.length) %></span>
   </div>
 
-  <div class="grid auto-rows-[minmax(15rem,auto)] grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid auto-rows-[minmax(15rem,auto)] grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" data-constellation>
     <% @zones.first(3).each_with_index do |zone, i| %>
-      <%= link_to zone_path(zone), class: "zone-card beam spotlight reveal", style: "--reveal-delay: #{i * 0.08}s" do %>
+      <%= link_to zone_path(zone), class: "zone-card beam spotlight reveal", style: "--reveal-delay: #{i * 0.08}s", data: { cn: true } do %>
         <% photo = zone.cover_photo %>
         <div class="art <%= photo ? "" : "art--#{zone.room_type}" %>">
           <% if photo %>
@@ -123,14 +138,14 @@
 <%# ---------- Hero: атлас с залами на первом экране ---------- %>
 <section class="relative overflow-hidden">
   <%# Планисфера справа, уходит за край %>
-  <div class="pointer-events-none absolute -right-40 -top-40 hidden opacity-70 lg:block xl:-right-24" aria-hidden="true">
+  <div class="parallax-wheel pointer-events-none absolute -right-40 -top-40 hidden opacity-70 lg:block xl:-right-24" aria-hidden="true">
     <%= render "shared/wheel", size: "h-[42rem] w-[42rem]" %>
   </div>
 
   <div class="relative mx-auto max-w-6xl px-4 pb-10 pt-16 sm:pt-20">
     <p class="tag hero-rise" style="--reveal-delay: .05s">Залы клуба Polaris</p>
 
-    <h1 class="display-1 hero-rise mt-6 max-w-3xl" style="--reveal-delay: .15s">
+    <h1 class="display-1 mt-6 max-w-3xl" data-kinetic>
       Ваш вечер <%= content_tag :span, "по звёздам", class: "serif-italic text-atlas-blue" %>
     </h1>
 
@@ -146,16 +161,20 @@
         <%= t(".hero_secondary") %>
       <% end %>
     </div>
+
+    <p class="hero-rise mt-8 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-ink-soft/80" style="--reveal-delay: .5s" aria-hidden="true">
+      ✦ <%= t(".marginalia") %>
+    </p>
   </div>
 
   <%# Залы сразу: первый экран — товар, а не логотип %>
-  <div id="halls" class="relative mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 pt-6">
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <div id="halls" class="relative mx-auto max-w-6xl scroll-mt-24 px-4 pb-16 pt-6" data-constellation-holder>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-constellation>
       <% @zones.first(3).each_with_index do |zone, i| %>
-        <%= link_to zone_path(zone), class: "plate hero-rise group", style: "--reveal-delay: #{0.4 + i * 0.12}s" do %>
+        <%= link_to zone_path(zone), class: "plate hero-rise group", style: "--reveal-delay: #{0.4 + i * 0.12}s", data: { cn: true } do %>
           <div class="plate-media <%= zone.photos.attached? ? "" : "plate--#{zone.room_type}" %>">
             <% if zone.photos.attached? %>
-              <%= image_tag zone.photos.first, alt: zone.to_s %>
+              <%= image_tag zone.cover_photo, alt: zone.to_s %>
             <% else %>
               <span class="plate-art"><%= icon zone.room_type.to_sym %></span>
             <% end %>
@@ -186,6 +205,17 @@
   </div>
 </section>
 
+<%# ---------- Marquee форматов ---------- %>
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <% 2.times do %>
+      <% %w[Кинокомнаты Караоке Бильярд PlayStation Лаундж].each do |item| %>
+        <span class="marquee-item"><%= item %> <span class="mq-star">✦</span></span>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
 <%# ---------- Как это работает: строка-легенда атласа ---------- %>
 <section class="border-y border-ink/15 bg-paper-card/60">
   <div class="mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-3 md:gap-10">
@@ -209,6 +239,7 @@
   <div class="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-40" aria-hidden="true">
     <%= render "shared/wheel", size: "h-[36rem] w-[36rem]" %>
   </div>
+  <div class="rule-star reveal mx-auto mb-12 max-w-2xl" aria-hidden="true"><span class="rs-star">✦</span></div>
   <p class="tag reveal justify-center"><%= t(".final_tag") %></p>
   <h2 class="display-2 reveal mx-auto mt-5 max-w-2xl">
     <%= t(".final_title") %> <span class="serif-italic text-atlas-blue"><%= t(".final_accent") %></span>

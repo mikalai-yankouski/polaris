@@ -30,7 +30,9 @@
   </head>
 
   <% if admin_section? %>
-    <body class="theme-dark min-h-screen antialiased">
+    <% admin_klass = admin_dark? ? "theme-dark" : "admin-light" %>
+    <body class="<%= admin_klass %> min-h-screen antialiased">
+      <% unless admin_dark? %><div class="atlas-bg" aria-hidden="true"></div><% end %>
       <div class="sky sky--calm" aria-hidden="true">
         <div class="aurora aurora--violet"></div>
         <div class="aurora aurora--indigo"></div>
@@ -56,7 +58,20 @@
         <p class="side-group"><%= t("admin.sidebar.analytics") %></p>
         <%= side_link t("admin.nav.reports"), admin_room_hours_report_path, :check_circle %>
 
-        <div class="mt-auto space-y-1 border-t border-white/[0.07] pt-4">
+        <div class="mt-auto space-y-1 border-t border-white/[0.07] pt-4 admin-sidebar-foot">
+          <% if admin_dark? %>
+            <%= button_to theme_switch_path(theme: "light", scope: "admin"), method: :post,
+                  class: "side-link w-full cursor-pointer !justify-start",
+                  title: t(".light_admin"), aria: { label: t(".light_admin") } do %>
+              <%= icon :sun, css_class: "h-4 w-4" %><span><%= t(".light_admin") %></span>
+            <% end %>
+          <% else %>
+            <%= button_to theme_switch_path(theme: "dark", scope: "admin"), method: :post,
+                  class: "side-link w-full cursor-pointer !justify-start",
+                  title: t(".dark_admin"), aria: { label: t(".dark_admin") } do %>
+              <%= icon :moon, css_class: "h-4 w-4" %><span><%= t(".dark_admin") %></span>
+            <% end %>
+          <% end %>
           <%= link_to root_path, class: "side-link" do %>
             <%= icon :arrow_right, css_class: "rotate-180" %><%= t("admin.sidebar.view_site") %>
           <% end %>
@@ -80,6 +95,17 @@
             <% end %>
             <% if authenticated? %>
               <span class="ml-auto truncate text-xs text-slate-400"><%= current_user %></span>
+              <% if admin_dark? %>
+                <%= button_to theme_switch_path(theme: "light", scope: "admin"), method: :post, class: "theme-toggle !rounded-full",
+                      form: { class: "inline" }, title: t(".light_admin"), aria: { label: t(".light_admin") } do %>
+                  <%= icon :sun, css_class: "h-3.5 w-3.5" %>
+                <% end %>
+              <% else %>
+                <%= button_to theme_switch_path(theme: "dark", scope: "admin"), method: :post, class: "theme-toggle !rounded-full",
+                      form: { class: "inline" }, title: t(".dark_admin"), aria: { label: t(".dark_admin") } do %>
+                  <%= icon :moon, css_class: "h-3.5 w-3.5" %>
+                <% end %>
+              <% end %>
               <%= button_to t("layouts.nav.sign_out"), admin_session_path, method: :delete, class: "cursor-pointer text-xs font-medium text-slate-400 hover:text-white" %>
             <% end %>
           </div>
@@ -184,8 +210,9 @@
     <% else %>
       <%# ============ АТЛАС (светлая) ============ %>
       <body class="theme-paper min-h-screen antialiased">
-        <%# Бумага звёздного атласа: лучи, точки-звёзды %>
+        <%# Бумага звёздного атласа: лучи, точки-звёзды, зерно %>
         <div class="atlas-bg" aria-hidden="true"></div>
+        <div class="grain-paper" aria-hidden="true"></div>
 
         <%# Верхняя планка %>
         <header class="topbar" data-controller="topbar">
@@ -214,7 +241,7 @@
                     form: { class: "inline" }, title: t(".night_theme"), aria: { label: t(".night_theme") } do %>
                 <%= icon :moon, css_class: "h-4 w-4" %>
               <% end %>
-              <%= link_to t(".book_cta"), zones_path, class: "btn-ink !px-4 !py-2 !text-[0.7rem]" %>
+              <%= link_to t(".book_cta"), zones_path, class: "btn-ink hidden !px-4 !py-2 !text-[0.7rem] sm:inline-flex" %>
             </div>
           </div>
           <nav class="flex gap-5 overflow-x-auto border-t border-ink/10 px-4 py-2 sm:hidden">

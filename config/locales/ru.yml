@@ -246,6 +246,8 @@ ru:
       book_cta: "Забронировать"
       night_theme: "Ночная тема"
       atlas_theme: "Светлая тема"
+      light_admin: "Светлая админка"
+      dark_admin: "Тёмная админка"
     nav:
       zones: "Залы"
       admin: "Админка"
@@ -267,6 +269,7 @@ ru:
       feature_3_title: "Зал под вашу компанию"
       feature_3_text: "От кинокомнаты на четверых до караоке-холла на двенадцать."
       hero_secondary: "Посмотреть залы"
+      marginalia: "навигация по залам — как по звёздам"
       plate_no: "Планшет %{no}"
       halls_count:
         one: "%{count} зал в каталоге"

@@ -1599,10 +1599,399 @@ body input[type="checkbox"] {
   background: rgba(255, 255, 255, 0.09);
 }
 
+.design-night .cursor-star { color: var(--color-star-400); }
+.design-night .cursor-star.is-hover { color: var(--color-star-300); }
+
+.design-night .constellation-svg .cl { stroke: var(--color-aurora-300); stroke-opacity: 0.55; }
+.design-night .constellation-svg .cs { fill: var(--color-aurora-300); }
+
+.design-night .marquee { border-color: rgba(255, 255, 255, 0.12); }
+.design-night .marquee-item { color: #9aa5c7; }
+.design-night .marquee-item .mq-star { color: var(--color-aurora-300); }
+
+/* Глинт по фото кино-карточек (ночь) */
+.design-night .art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-160%);
+  pointer-events: none;
+}
+
+.design-night .zone-card:hover .art::after {
+  transform: translateX(160%);
+  transition: transform 0.9s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .design-night .stars, .design-night .aurora {
     animation: none !important;
   }
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Сигнатура атласа: курсор-звезда, кинетика, созвездия, marquee       */
+/* ------------------------------------------------------------------ */
+
+/* Курсор-звезда: pointer:fine + без reduced-motion (класс ставит JS) */
+body.has-star-cursor,
+body.has-star-cursor *:not(input):not(textarea):not(select) {
+  cursor: none !important;
+}
+
+.cursor-star {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  color: var(--color-ink);
+  opacity: 0;
+  transition: opacity 0.25s ease, color 0.18s ease;
+  will-change: transform;
+}
+
+.cursor-star svg { display: block; width: 100%; height: 100%; }
+
+.cursor-star.is-on { opacity: 0.9; }
+.cursor-star.is-hover { color: var(--color-atlas-blue); }
+.cursor-star.is-hidden { opacity: 0 !important; }
+
+/* Кинетический заголовок: буквы-звёзды поднимаются на нагрузке */
+.kl {
+  display: inline-block;
+  animation: letter-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i) * 22ms + 0.2s);
+  will-change: transform, opacity;
+}
+
+@keyframes letter-rise {
+  from { opacity: 0; transform: translateY(0.55em) rotate(3deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+/* Созвездие между планшетами: линии рисуются после заголовка */
+.constellation-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.constellation-svg .cl {
+  stroke: var(--color-ink);
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: line-draw 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 1.05s;
+}
+
+.constellation-svg .cl:nth-child(2) { animation-delay: 1.35s; }
+
+@keyframes line-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.constellation-svg .cs {
+  fill: var(--color-atlas-blue);
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  animation: star-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(1.05s + var(--j, 0) * 0.3s + 0.4s);
+}
+
+@keyframes star-pop {
+  0% { transform: scale(0) rotate(45deg); }
+  70% { transform: scale(1.5) rotate(0); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Marquee форматов: тонкая редакторская полоса */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid rgba(25, 22, 16, 0.16);
+  padding: 0.7rem 0;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 44s linear infinite;
+}
+
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding-inline: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
+.marquee-item .mq-star { color: var(--color-atlas-blue); font-size: 0.6rem; }
+
+/* Зерно бумаги — тактильность */
+.grain-paper {
+  position: fixed;
+  inset: 0;
+  z-index: -4;
+  pointer-events: none;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* Орнамент-разделитель: линия со звездой */
+.rule-star {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.rule-star::before,
+.rule-star::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(25, 22, 16, 0.25);
+}
+
+.rule-star .rs-star {
+  color: var(--color-atlas-blue);
+  font-size: 0.7rem;
+}
+
+/* Блик по фото планшета при наведении — сдержанный */
+.plate-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.34) 50%, transparent 70%);
+  transform: translateX(-160%);
+  pointer-events: none;
+}
+
+.plate:hover .plate-media::after {
+  transform: translateX(160%);
+  transition: transform 0.9s ease;
+}
+
+/* Параллакс-обёртка колеса (трансформ ставит JS, вращение остаётся на svg) */
+.parallax-wheel { will-change: transform; }
+
+
+/* ------------------------------------------------------------------ */
+/* Админка: светлая тема (переключатель в сайдбаре)                    */
+/* ------------------------------------------------------------------ */
+
+.admin-light {
+  color-scheme: light;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.admin-light ::-webkit-scrollbar { width: 10px; }
+.admin-light ::-webkit-scrollbar-track { background: var(--color-paper); }
+.admin-light ::-webkit-scrollbar-thumb {
+  background: #d8d0bd;
+  border-radius: 8px;
+  border: 2px solid var(--color-paper);
+}
+
+.admin-light .sky { display: none; }
+
+/* Сайдбар */
+.admin-light .admin-sidebar {
+  border-color: #e6e0d2;
+  background: rgba(251, 248, 241, 0.94);
+}
+
+.admin-light .admin-sidebar-foot { border-color: rgba(25, 22, 16, 0.12); }
+
+.admin-light header.sticky {
+  border-color: rgba(25, 22, 16, 0.14);
+  background: rgba(246, 242, 233, 0.94);
+}
+
+.admin-light .side-link.cursor-pointer,
+.admin-light form .side-link { color: #57534e; }
+.admin-light form .side-link:hover { color: var(--color-ink); }
+
+.admin-light .side-group { color: #a49b88; }
+
+.admin-light .side-link { color: #57534e; }
+.admin-light .side-link:hover { color: var(--color-ink); background: rgba(25, 22, 16, 0.05); }
+.admin-light .side-link svg { color: #a8a08f; }
+.admin-light .side-link:hover svg { color: var(--color-atlas-blue); }
+
+.admin-light .side-link--active {
+  color: var(--color-atlas-blue);
+  background: linear-gradient(90deg, rgba(38, 53, 124, 0.1), rgba(38, 53, 124, 0.02));
+  box-shadow: inset 2px 0 0 var(--color-atlas-blue);
+}
+.admin-light .side-link--active svg { color: var(--color-atlas-blue); }
+
+.admin-light .logo-gem {
+  border-color: rgba(38, 53, 124, 0.3);
+  background: rgba(38, 53, 124, 0.06);
+  color: var(--color-atlas-blue);
+  box-shadow: none;
+}
+
+.admin-light .admin-title { color: var(--color-ink); font-family: var(--font-display); }
+.admin-light .admin-meta { color: var(--color-ink-soft); }
+
+/* Карточки-стекло → белые карты */
+.admin-light .glass {
+  border-color: rgba(25, 22, 16, 0.16);
+  background: #fffdf8;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgba(25, 22, 16, 0.04), 0 8px 24px -16px rgba(25, 22, 16, 0.1);
+}
+
+.admin-light .glass-deep {
+  border-color: rgba(25, 22, 16, 0.2);
+  background: #fffdf8;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgba(25, 22, 16, 0.04), 0 8px 24px -16px rgba(25, 22, 16, 0.1);
+}
+
+.admin-light .spotlight::before {
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 50%), rgba(38, 53, 124, 0.06), transparent 45%);
+}
+
+.admin-light .kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.admin-light .kicker::before {
+  content: "";
+  width: 1.5rem;
+  height: 1px;
+  background: var(--color-atlas-blue);
+  opacity: 0.6;
+}
+
+/* Кнопки-действия: тинты на белом */
+.admin-light .a-btn--ok { color: #1c6e52; border-color: rgba(28, 110, 82, 0.35); background: rgba(30, 122, 92, 0.08); }
+.admin-light .a-btn--ok:hover { background: rgba(30, 122, 92, 0.16); }
+
+.admin-light .a-btn--danger { color: #962d3e; border-color: rgba(150, 45, 62, 0.35); background: rgba(178, 58, 78, 0.07); }
+.admin-light .a-btn--danger:hover { background: rgba(178, 58, 78, 0.14); }
+
+.admin-light .a-btn--info { color: #1d5a8a; border-color: rgba(29, 90, 138, 0.35); background: rgba(29, 90, 138, 0.07); }
+.admin-light .a-btn--info:hover { background: rgba(29, 90, 138, 0.14); }
+
+.admin-light .a-btn--ghost { color: #57534e; border-color: rgba(25, 22, 16, 0.25); background: transparent; }
+.admin-light .a-btn--ghost:hover { color: var(--color-ink); background: rgba(25, 22, 16, 0.05); }
+
+.admin-light .a-btn--gold { color: #8a6215; border-color: rgba(166, 124, 46, 0.4); background: rgba(166, 124, 46, 0.08); }
+.admin-light .a-btn--gold:hover { background: rgba(166, 124, 46, 0.16); }
+
+/* Seg-табы */
+.admin-light .seg-tabs { border-color: rgba(25, 22, 16, 0.18); background: rgba(25, 22, 16, 0.04); }
+.admin-light .seg-tab { color: #57534e; }
+.admin-light .seg-tab:hover { color: var(--color-ink); }
+.admin-light .seg-tab.is-active {
+  color: var(--color-atlas-blue);
+  background: #fffdf8;
+  box-shadow: inset 0 0 0 1px rgba(38, 53, 124, 0.35);
+}
+
+/* Таблица */
+.admin-light .table-dark thead th {
+  color: var(--color-ink-soft);
+  border-color: rgba(25, 22, 16, 0.18);
+  background: rgba(25, 22, 16, 0.03);
+}
+
+.admin-light .table-dark tbody td {
+  color: #44403c;
+  border-color: rgba(25, 22, 16, 0.1);
+}
+
+.admin-light .table-dark tbody tr:hover { background: rgba(25, 22, 16, 0.03); }
+
+/* Toggle-row */
+.admin-light .toggle-row {
+  border-color: rgba(25, 22, 16, 0.2);
+  background: #fffdf8;
+  color: #44403c;
+}
+
+.admin-light .toggle-row:hover { border-color: rgba(25, 22, 16, 0.4); }
+
+.admin-light .toggle-row:has(input:checked) {
+  border-color: rgba(38, 53, 124, 0.5);
+  background: rgba(38, 53, 124, 0.06);
+  color: var(--color-ink);
+}
+
+/* Sticky-save */
+.admin-light .sticky-save {
+  border-color: rgba(25, 22, 16, 0.16);
+  background: rgba(251, 248, 241, 0.92);
+}
+
+/* Клетки шахматки */
+.admin-light .cell-free { background: rgba(25, 22, 16, 0.035); }
+.admin-light .cell-pending { background: rgba(196, 141, 38, 0.35); }
+.admin-light .cell-confirmed { background: rgba(30, 122, 92, 0.35); }
+.admin-light .cell-cleaning { background: rgba(29, 90, 138, 0.28); }
+
+/* Чипы мобильной навигации админки */
+.admin-light .chip {
+  border-color: rgba(25, 22, 16, 0.2);
+  background: #fffdf8;
+  color: #57534e;
+}
+
+.admin-light .chip--gold {
+  border-color: rgba(166, 124, 46, 0.45);
+  background: rgba(166, 124, 46, 0.08);
+  color: #8a6215;
+}
+
+.admin-light .chip--gold svg { color: #8a6215; }
+
+/* Кнопки форм: ghost/gold приспосабливаются, aurora остаётся */
+.admin-light .btn--ghost {
+  color: #44403c;
+  border-color: rgba(25, 22, 16, 0.25);
+  background: #fffdf8;
+}
+
+.admin-light .btn--ghost:hover {
+  color: var(--color-ink);
+  border-color: rgba(25, 22, 16, 0.45);
+  background: #fff;
+}
+
+.admin-light .btn--gold {
+  color: #8a6215;
+  background: linear-gradient(135deg, #f2d58a 0%, #e4bc63 100%);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1612,9 +2001,20 @@ body input[type="checkbox"] {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
-  .aurora, .hint-float, .pulse-glow, .beam::after, .wheel {
+  .aurora, .hint-float, .pulse-glow, .beam::after, .wheel, .kl,
+  .constellation-svg .cl, .constellation-svg .cs, .marquee-track {
     animation: none !important;
   }
+
+  .kl, .constellation-svg .cl { opacity: 1; stroke-dashoffset: 0; }
+  .constellation-svg .cs { transform: none; }
+
+  body.has-star-cursor,
+  body.has-star-cursor *:not(input):not(textarea):not(select) {
+    cursor: auto !important;
+  }
+
+  .cursor-star { display: none !important; }
 
   .reveal, .hero-rise {
     opacity: 1 !important;
@@ -1629,3 +2029,30 @@ body input[type="checkbox"] {
 }
 
 } /* конец @layer components */
+
+
+/* ------------------------------------------------------------------ */
+/* Админ-light: инверсии тёмных утилит — вне слоёв, чтобы бить утилиты */
+/* ------------------------------------------------------------------ */
+
+.admin-light .text-white { color: var(--color-ink); }
+.admin-light .text-slate-300 { color: #6b6455; }
+.admin-light .text-slate-400 { color: #8a8272; }
+.admin-light .text-slate-500 { color: #8a8272; }
+.admin-light .text-star-300 { color: #8a6215; }
+.admin-light .text-aurora-300 { color: var(--color-atlas-blue); }
+.admin-light .text-emerald-300 { color: #1c6e52; }
+.admin-light .text-rose-300 { color: #962d3e; }
+.admin-light .text-glow-300 { color: #0d9488; }
+.admin-light .bg-night-950\/75 { background: rgba(246, 242, 233, 0.94); }
+.admin-light .bg-night-900\/90 { background: rgba(251, 248, 241, 0.94); }
+.admin-light .border-white\/\[0\.07\] { border-color: rgba(25, 22, 16, 0.14); }
+.admin-light .border-white\/\[0\.08\] { border-color: rgba(25, 22, 16, 0.18); }
+.admin-light .border-white\/10 { border-color: rgba(25, 22, 16, 0.18); }
+.admin-light .border-aurora-300\/20 { border-color: rgba(38, 53, 124, 0.25); }
+.admin-light .bg-aurora-500\/10 { background: rgba(38, 53, 124, 0.06); }
+.admin-light .bg-white\/\[0\.02\] { background: rgba(25, 22, 16, 0.02); }
+.admin-light .bg-white\/\[0\.03\] { background: rgba(25, 22, 16, 0.02); }
+.admin-light .glass .divide-white\/\[0\.06\] > :not([hidden]) ~ :not([hidden]) { border-color: rgba(25, 22, 16, 0.1); }
+.admin-light .table-dark thead th { color: var(--color-ink-soft); }
+.admin-light .table-dark tbody td { color: #44403c; }

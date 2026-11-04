@@ -10,26 +10,51 @@ module AdminChartsHelper
     "Завершена" => "#5B8CFF"
   }.freeze
 
-  # Общие опции Chartkick + Chart.js для тёмной админки (по мотивам varka)
+  # Светлая палитра: те же роли, глубже тона для белого фона
+  PALETTE_LIGHT = [ "#B98A2E", "#5B48C7", "#0D9488", "#2F5FE0", "#D05672", "#A16207" ].freeze
+
+  STATUS_COLORS_LIGHT = {
+    "На рассмотрении" => "#A16207",
+    "Подтверждена" => "#0D9488",
+    "Отклонена" => "#D05672",
+    "Отменена" => "#78716C",
+    "Завершена" => "#2F5FE0"
+  }.freeze
+
+  def chart_palette
+    admin_dark? ? PALETTE : PALETTE_LIGHT
+  end
+
+  # Общие опции Chartkick + Chart.js (по мотивам varka)
   def admin_chart_options(height: "280px", **extra)
     {
       height:,
       thousands: " ",
       decimal: ",",
-      colors: PALETTE,
+      colors: chart_palette,
       library: {
         plugins: { legend: { display: false } },
         datasets: [ { borderRadius: 6, borderSkipped: "start", maxBarThickness: 46, categoryPercentage: 0.72 } ],
         scales: {
           x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: false } },
-          y: { border: { display: false }, grid: { color: "rgba(255,255,255,0.07)" }, ticks: { precision: 0 } }
+          y: { border: { display: false }, grid: { color: chart_grid_color }, ticks: { precision: 0 } }
         }
       }
     }.deep_merge(extra)
   end
 
+  def chart_grid_color
+    admin_dark? ? "rgba(255,255,255,0.07)" : "rgba(25,22,16,0.08)"
+  end
+
+  def chart_legend_color
+    admin_dark? ? "#9AA5C7" : "#57534E"
+  end
+
   # Линия с мягкой заливкой области
   def admin_line_options(color:, height: "280px")
+    light = !admin_dark?
+    color = PALETTE_LIGHT[1] if light && color == "#9A8BFA"
     admin_chart_options(height:,
       colors: [ color ],
       library: {
@@ -45,12 +70,13 @@ module AdminChartsHelper
   # Пончик со статусами: единственный график с легендой.
   # Цвета мапим по подписям данных, а не по порядку
   def admin_status_donut_options(data, height: "280px")
+    palette = admin_dark? ? STATUS_COLORS : STATUS_COLORS_LIGHT
     {
       height:,
       donut: true,
       thousands: " ",
       decimal: ",",
-      colors: data.keys.map { |label| STATUS_COLORS.fetch(label, "#7C88AD") },
+      colors: data.keys.map { |label| palette.fetch(label, "#78716C") },
       legend: "bottom",
       library: {
         cutout: "68%",
@@ -58,7 +84,7 @@ module AdminChartsHelper
           legend: {
             display: true,
             position: "bottom",
-            labels: { color: "#9AA5C7", boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 }
+            labels: { color: chart_legend_color, boxWidth: 10, boxHeight: 10, usePointStyle: true, padding: 14 }
           }
         }
       }

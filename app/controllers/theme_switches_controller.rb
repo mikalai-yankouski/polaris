@@ -4,6 +4,12 @@ class ThemeSwitchesController < ApplicationController
 
   def create
     theme = params[:theme]
+    if params[:scope] == "admin"
+      cookies.permanent[:admin_theme] = theme if %w[dark light].include?(theme)
+      redirect_back_or_to admin_root_path
+      return
+    end
+
     if %w[atlas night].include?(theme)
       cookies.permanent[:design_theme] = theme
     end

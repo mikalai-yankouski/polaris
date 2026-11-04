@@ -3,11 +3,16 @@ import { Chart, registerables } from "chart.js"
 Chart.register(...registerables)
 window.Chart = Chart
 
-// Тёмная тема графиков (админка и публичные графики)
-Chart.defaults.color = "#9AA5C7"
+// Тема графиков: админка светлая/тёмная — класс тела уже в DOM (скрипт отложенный)
+if (document.body.classList.contains("admin-light")) {
+  Chart.defaults.color = "#57534E"
+  Chart.defaults.borderColor = "rgba(25, 22, 16, 0.08)"
+} else {
+  Chart.defaults.color = "#9AA5C7"
+  Chart.defaults.borderColor = "rgba(255, 255, 255, 0.07)"
+}
 Chart.defaults.font.family = "Inter, system-ui, sans-serif"
 Chart.defaults.font.size = 11
-Chart.defaults.borderColor = "rgba(255, 255, 255, 0.07)"
 
 import "chartkick"
 import "@hotwired/turbo-rails"
@@ -217,8 +222,192 @@ function initConstellation() {
   })
 }
 
+/* ---------------------------------------------------------------------------
+   Атлас: сигнатурные эффекты светлой темы
+   (курсор-звезда, кинетический заголовок, созвездие планшетов, параллакс)
+--------------------------------------------------------------------------- */
+
+const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c.6 6.5 4.9 10.8 12 12-7.1 1.2-11.4 5.5-12 12-.6-6.5-4.9-10.8-12-12C7.1 10.8 11.4 6.5 12 0Z"/></svg>'
+
+function initStarCursor() {
+  if (document.body.hasStarCursorBound) return
+  document.body.hasStarCursorBound = true
+
+  const star = document.createElement("div")
+  star.className = "cursor-star"
+  star.innerHTML = STAR_SVG
+  const lag = document.createElement("div")
+  lag.className = "cursor-star"
+  lag.innerHTML = STAR_SVG
+  document.body.append(star, lag)
+  document.body.classList.add("has-star-cursor")
+
+  star.style.width = "15px"
+  star.style.height = "15px"
+  lag.style.width = "9px"
+  lag.style.height = "9px"
+  lag.style.opacity = "0.35"
+  star.style.transform = "translate3d(-100px, -100px, 0)"
+  lag.style.transform = "translate3d(-100px, -100px, 0)"
+
+  let mx = -100, my = -100, lx = -100, ly = -100, raf = null
+
+  // Лаг-спутник догоняет курсор; цикл останавливается, когда догнал
+  const paint = () => {
+    lx += (mx - lx) * 0.22
+    ly += (my - ly) * 0.22
+    lag.style.transform = `translate3d(${lx - 4.5}px, ${ly - 4.5}px, 0)`
+    if (Math.abs(mx - lx) + Math.abs(my - ly) < 0.4) {
+      raf = null
+      return
+    }
+    raf = requestAnimationFrame(paint)
+  }
+
+  document.addEventListener("pointermove", (event) => {
+    mx = event.clientX
+    my = event.clientY
+    // Главную звезду ставим мгновенно, вне rAF — ноль задержки
+    star.style.transform = `translate3d(${mx - 7.5}px, ${my - 7.5}px, 0)`
+    star.classList.add("is-on")
+    lag.classList.add("is-on")
+
+    const target = event.target instanceof Element ? event.target : null
+    const overInteractive = !!target?.closest("a, button, [role='button'], .plate, .zone-card")
+    const overText = !!target?.closest("input, textarea, select")
+
+    star.classList.toggle("is-hover", overInteractive)
+    star.classList.toggle("is-hidden", overText)
+    lag.classList.toggle("is-hidden", overText || overInteractive)
+
+    if (!raf) raf = requestAnimationFrame(paint)
+  }, { passive: true })
+
+  document.addEventListener("pointerleave", () => {
+    star.classList.remove("is-on")
+    lag.classList.remove("is-on")
+  })
+  document.addEventListener("pointerdown", () => star.style.scale = "0.7")
+  document.addEventListener("pointerup", () => star.style.scale = "1")
+}
+
+/* Кинетический заголовок: текст превращается в буквы-звёзды */
+function initKineticHeadline() {
+  document.querySelectorAll("[data-kinetic]").forEach((el) => {
+    if (el.dataset.kineticDone) return
+    el.dataset.kineticDone = "1"
+
+    let index = 0
+    const wrap = (node) => {
+      const text = node.textContent
+      const frag = document.createDocumentFragment()
+      for (const ch of text) {
+        if (ch === " ") {
+          frag.append(" ")
+          continue
+        }
+        const span = document.createElement("span")
+        span.className = "kl"
+        span.style.setProperty("--i", index++)
+        span.textContent = ch
+        frag.append(span)
+      }
+      node.replaceWith(frag)
+    }
+    ;[...el.childNodes].forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) wrap(node)
+    })
+  })
+}
+
+/* Созвездие: соединяем планшеты залов линией, звёзды в узлах */
+function initHallConstellation() {
+  const holder = document.querySelector("[data-constellation-holder]")
+  const plates = [...document.querySelectorAll("[data-constellation-holder] [data-cn]")]
+  if (!holder || plates.length < 2) return
+  if (holder.dataset.constellationDone) return
+  holder.dataset.constellationDone = "1"
+
+  const draw = () => {
+    holder.querySelectorAll("svg").forEach((s) => s.remove())
+    const rect = holder.getBoundingClientRect()
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+    svg.setAttribute("class", "constellation-svg")
+    svg.setAttribute("width", rect.width)
+    svg.setAttribute("height", rect.height)
+    svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`)
+
+    const centers = plates.map((plate) => {
+      const r = plate.getBoundingClientRect()
+      return { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2 }
+    })
+
+    centers.forEach((c, j) => {
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle")
+      dot.setAttribute("class", "cs")
+      dot.setAttribute("cx", c.x)
+      dot.setAttribute("cy", c.y)
+      dot.setAttribute("r", 3.5)
+      dot.style.setProperty("--j", j)
+      svg.append(dot)
+    })
+
+    for (let i = 0; i < centers.length - 1; i++) {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+      line.setAttribute("class", "cl")
+      line.setAttribute("pathLength", 1)
+      line.setAttribute("x1", centers[i].x)
+      line.setAttribute("y1", centers[i].y)
+      line.setAttribute("x2", centers[i + 1].x)
+      line.setAttribute("y2", centers[i + 1].y)
+      svg.append(line)
+    }
+
+    holder.append(svg)
+  }
+
+  draw()
+  let timer = null
+  window.addEventListener("resize", () => {
+    clearTimeout(timer)
+    timer = setTimeout(draw, 200)
+  })
+}
+
+/* Параллакс колеса: лёгкий сдвиг за скроллом */
+function initWheelParallax() {
+  const wheels = document.querySelectorAll(".parallax-wheel")
+  if (!wheels.length) return
+
+  const onScroll = () => {
+    const y = window.scrollY
+    wheels.forEach((w, i) => {
+      w.style.transform = `translate3d(0, ${y * (i === 0 ? -0.06 : -0.03)}px, 0)`
+    })
+  }
+  onScroll()
+  window.addEventListener("scroll", onScroll, { passive: true })
+}
+
 document.addEventListener("turbo:load", () => {
   initReveal()
   initNav()
   initConstellation()
+
+  // Звёзды-курсоры прячутся при навигации, пока мышь снова не двинется
+  document.querySelectorAll(".cursor-star").forEach((s) => {
+    s.classList.remove("is-on", "is-hover")
+    s.style.transform = "translate3d(-100px, -100px, 0)"
+  })
+
+  const publicTheme = document.body.classList.contains("theme-paper") || document.body.classList.contains("design-night")
+
+  if (publicTheme) {
+    if (window.matchMedia("(pointer: fine)").matches && !reducedMotion) initStarCursor()
+    if (!reducedMotion) {
+      initKineticHeadline()
+      initWheelParallax()
+    }
+    initHallConstellation()
+  }
 })
