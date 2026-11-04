@@ -1,86 +1,114 @@
-<h1 class="mb-6 text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
-
-<%= form_with url: admin_reservations_path, method: :get, class: "mb-6 flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4" do |form| %>
+<div class="admin-page-head">
   <div>
-    <%= form.label :status, t(".filter_status"), class: "block text-xs font-medium uppercase text-slate-500" %>
-    <%= form.select :status,
-          options_for_select(Reservation.statuses.keys.map { |s| [Reservation.new(status: s).status_label, s] }, params[:status]),
-          { include_blank: t(".all") },
-          onchange: "this.form.requestSubmit()", class: "mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= t(".count", count: @reservations.size) %></p>
+  </div>
+</div>
+
+<%= form_with url: admin_reservations_path, method: :get, class: "glass mb-6 flex flex-wrap items-center gap-4 p-4" do |form| %>
+  <div class="seg-tabs" role="tablist" aria-label="<%= t(".filter_status") %>">
+    <%= link_to t(".all"), admin_reservations_path,
+          class: "seg-tab #{'is-active' unless params[:status].present? }" %>
+    <% Reservation.statuses.each_key do |status| %>
+      <%= link_to Reservation.new(status: status).status_label,
+            admin_reservations_path(status:),
+            class: "seg-tab #{"is-active" if params[:status] == status}" %>
+    <% end %>
   </div>
 
-  <div>
-    <%= form.label :zone_id, t(".filter_zone"), class: "block text-xs font-medium uppercase text-slate-500" %>
+  <div class="ml-auto flex items-center gap-2">
     <%= form.select :zone_id,
           options_from_collection_for_select(@zones, :id, :name, params[:zone_id]),
-          { include_blank: t(".all") },
-          onchange: "this.form.requestSubmit()", class: "mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" %>
+          { include_blank: t(".all_zones") },
+          { class: "field !w-auto !py-2 !text-sm", onchange: "this.form.requestSubmit()" } %>
+    <noscript><%= form.submit t(".apply"), class: "a-btn a-btn--ghost" %></noscript>
   </div>
 <% end %>
 
 <% if @reservations.any? %>
-  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-    <table class="w-full text-left text-sm">
-      <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+  <div class="glass overflow-x-auto p-0">
+    <table class="table-dark">
+      <thead>
         <tr>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:zone) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:user) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:starts_at) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:ends_at) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:guests_count) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:purpose) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:total_price_cents) %></th>
-          <th class="px-4 py-3"><%= Reservation.human_attribute_name(:status) %></th>
-          <th class="px-4 py-3"><%= t("payments.title") %></th>
-          <th class="px-4 py-3"></th>
+          <th><%= Reservation.human_attribute_name(:zone) %></th>
+          <th><%= Reservation.human_attribute_name(:user) %></th>
+          <th><%= Reservation.human_attribute_name(:starts_at) %></th>
+          <th><%= Reservation.human_attribute_name(:guests_count) %></th>
+          <th><%= Reservation.human_attribute_name(:total_price_cents) %></th>
+          <th><%= Reservation.human_attribute_name(:status) %></th>
+          <th><%= t("payments.title") %></th>
+          <th></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody>
         <% @reservations.each do |reservation| %>
           <tr>
-            <td class="px-4 py-3 font-medium text-slate-900"><%= reservation.zone %></td>
-            <td class="px-4 py-3">
-              <%= reservation.user %>
-              <span class="block text-xs text-slate-400"><%= reservation.user.email_address %></span>
+            <td class="font-medium text-white"><%= reservation.zone %></td>
+            <td>
+              <%= reservation.client_name %>
+              <span class="block text-xs text-slate-500"><%= reservation.client_contact %></span>
             </td>
-            <td class="px-4 py-3"><%= l(reservation.starts_at, format: :short) %></td>
-            <td class="px-4 py-3"><%= l(reservation.ends_at, format: :short) %></td>
-            <td class="px-4 py-3"><%= reservation.guests_count %></td>
-            <td class="px-4 py-3 max-w-40 truncate text-slate-500"><%= reservation.purpose %></td>
-            <td class="px-4 py-3"><%= money(reservation.total_price_cents) %></td>
-            <td class="px-4 py-3"><%= status_badge(reservation) %></td>
-            <td class="px-4 py-3">
+            <td class="num">
+              <% if reservation.slot? %>
+                <%= l(reservation.starts_at, format: :short) %> — <%= l(reservation.ends_at, format: :time_only) %>
+              <% else %>
+                <span class="badge badge--pending"><%= t(".time_to_agree") %></span>
+                <span class="mt-1 block text-xs text-slate-500"><%= l(reservation.requested_date) %></span>
+              <% end %>
+            </td>
+            <td class="num"><%= reservation.guests_count %></td>
+            <td class="num font-semibold text-star-300"><%= reservation.slot? ? money(reservation.total_price_cents) : "—" %></td>
+            <td>
+              <%= status_badge(reservation) %>
+              <% if reservation.purpose.present? %>
+                <span class="mt-1 block max-w-40 truncate text-xs text-slate-500" title="<%= reservation.purpose %>"><%= reservation.purpose %></span>
+              <% end %>
+            </td>
+            <td>
               <%= payment_badge(reservation) %>
               <% if policy(reservation).record_on_site? %>
                 <%= button_to t("payments.record_on_site"), record_on_site_admin_reservation_path(reservation), method: :post,
                       form: { data: { turbo_confirm: "Отметить оплату на месте?" } },
-                      class: "mt-1 cursor-pointer text-xs font-medium text-slate-600 underline hover:text-slate-900" %>
+                      class: "a-btn a-btn--gold mt-1.5" %>
               <% end %>
             </td>
-            <td class="px-4 py-3">
-              <div class="flex justify-end gap-2 text-xs">
+            <td>
+              <div class="flex flex-wrap justify-end gap-1.5">
+                <% if policy(reservation).assign_time? %>
+                  <%# Заявка без времени: согласуем слот и сразу назначаем %>
+                  <% date = reservation.requested_date || Date.current %>
+                  <% default_start = Time.zone.local(date.year, date.month, date.day, 18, 0) %>
+                  <%= form_with url: assign_time_admin_reservation_path(reservation), class: "flex flex-wrap justify-end gap-1.5" do |form| %>
+                    <%= form.datetime_local_field :starts_at, value: default_start.strftime("%Y-%m-%dT%H:%M"),
+                          required: true, class: "field !w-auto !py-1.5 !text-sm" %>
+                    <%= form.select :duration_minutes, booking_duration_options(reservation.zone),
+                          { selected: booking_duration_default(reservation.zone) },
+                          { class: "field !w-auto !py-1.5 !text-sm" } %>
+                    <%= form.submit t(".assign_time"), class: "a-btn a-btn--gold" %>
+                  <% end %>
+                <% end %>
                 <% if policy(reservation).extend? %>
-                  <%= button_to "+30 #{t('minutes_short')}", extend_admin_reservation_path(reservation, minutes: 30), method: :post,
+                  <%= button_to "+30#{t('minutes_short')}", extend_admin_reservation_path(reservation, minutes: 30), method: :post,
                         form: { data: { turbo_confirm: "Продлить на 30 минут?" } },
-                        class: "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50" %>
+                        class: "a-btn a-btn--ghost" %>
                 <% end %>
                 <% if reservation.confirmable? %>
                   <%= button_to t(".confirm"), confirm_admin_reservation_path(reservation), method: :post,
-                        class: "cursor-pointer rounded-lg bg-emerald-600 px-3 py-1.5 font-medium text-white hover:bg-emerald-500" %>
+                        class: "a-btn a-btn--ok" %>
                 <% end %>
                 <% if reservation.declinable? %>
                   <%= button_to t(".decline"), decline_admin_reservation_path(reservation), method: :post,
                         form: { data: { turbo_confirm: "Причина отклонения?" } },
-                        class: "cursor-pointer rounded-lg bg-rose-600 px-3 py-1.5 font-medium text-white hover:bg-rose-500" %>
+                        class: "a-btn a-btn--danger" %>
                 <% end %>
                 <% if reservation.completable? %>
                   <%= button_to t(".complete"), complete_admin_reservation_path(reservation), method: :post,
-                        class: "cursor-pointer rounded-lg bg-sky-600 px-3 py-1.5 font-medium text-white hover:bg-sky-500" %>
+                        class: "a-btn a-btn--info" %>
                 <% end %>
                 <% if reservation.cancellable? %>
                   <%= button_to t(".cancel"), cancel_admin_reservation_path(reservation), method: :post,
                         form: { data: { turbo_confirm: "Отменить бронь?" } },
-                        class: "cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50" %>
+                        class: "a-btn a-btn--ghost" %>
                 <% end %>
               </div>
             </td>
@@ -90,5 +118,5 @@
     </table>
   </div>
 <% else %>
-  <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400"><%= t(".empty") %></p>
+  <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
 <% end %>

@@ -57,10 +57,16 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: "https" }
+  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: ENV.fetch("APP_PROTOCOL", "https") }
 
   # Абсолютные URL для bePaid (return_url / notification_url)
-  Rails.application.routes.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: "https" }
+  Rails.application.routes.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: ENV.fetch("APP_PROTOCOL", "https") }
+
+  # Фоновые задачи — Solid Queue в отдельной базе polaris_production_queue
+  # (db/queue_schema.rb, см. database.yml). Без connects_to гём искал бы
+  # свои таблицы в primary и падал на старте.
+  config.active_job.queue_adapter = :solid_queue
+  config.solid_queue.connects_to = { database: { writing: :queue } }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {

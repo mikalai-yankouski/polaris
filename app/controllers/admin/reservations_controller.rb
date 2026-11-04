@@ -1,6 +1,6 @@
 module Admin
   class ReservationsController < BaseController
-    before_action :set_reservation, only: %i[confirm decline cancel complete extend record_on_site]
+    before_action :set_reservation, only: %i[confirm decline cancel complete extend record_on_site assign_time]
 
     def index
       scope = policy_scope(Reservation).includes(:zone, :user)
@@ -13,8 +13,8 @@ module Admin
     def confirm
       authorize @reservation
       @reservation.confirm!
-      ReservationMailer.with(reservation: @reservation).confirmed.deliver_later
-      redirect_to admin_reservations_path, notice: t(".confirmed", name: @reservation.user)
+      ReservationMailer.deliver_if_user(@reservation, :confirmed)
+      redirect_to admin_reservations_path, notice: t(".confirmed", name: @reservation.client_name)
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
@@ -22,8 +22,8 @@ module Admin
     def decline
       authorize @reservation
       @reservation.decline!(note: params[:review_note].presence || t(".default_note"))
-      ReservationMailer.with(reservation: @reservation).declined.deliver_later
-      redirect_to admin_reservations_path, notice: t(".declined", name: @reservation.user)
+      ReservationMailer.deliver_if_user(@reservation, :declined)
+      redirect_to admin_reservations_path, notice: t(".declined", name: @reservation.client_name)
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
@@ -31,7 +31,7 @@ module Admin
     def cancel
       authorize @reservation
       @reservation.cancel!
-      redirect_to admin_reservations_path, notice: t(".cancelled", name: @reservation.user)
+      redirect_to admin_reservations_path, notice: t(".cancelled", name: @reservation.client_name)
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
@@ -39,7 +39,7 @@ module Admin
     def complete
       authorize @reservation
       @reservation.complete!
-      redirect_to admin_reservations_path, notice: t(".completed", name: @reservation.user)
+      redirect_to admin_reservations_path, notice: t(".completed", name: @reservation.client_name)
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
@@ -66,12 +66,33 @@ module Admin
         test: false,
         raw_response: { recorded_by: current_user.id, at: Time.current.iso8601 }
       )
-      redirect_to admin_reservations_path, notice: t(".recorded_on_site", name: @reservation.user)
+      redirect_to admin_reservations_path, notice: t(".recorded_on_site", name: @reservation.client_name)
     rescue ActiveRecord::RecordInvalid
       redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
     end
 
-    private
+      # Заявка без времени: согласовали слот по телефону — назначаем и считаем цену
+    def assign_time
+      authorize @reservation
+      starts_at = Time.zone.parse(params[:starts_at]) if params[:starts_at].present?
+      duration = params[:duration_minutes].presence&.to_i
+      if starts_at && duration
+        @reservation.assign_slot!(starts_at:, duration_minutes: duration)
+        redirect_to admin_reservations_path,
+                    notice: t(".assigned", name: @reservation.client_name, starts: l(@reservation.starts_at, format: :short))
+      else
+        redirect_to admin_reservations_path, alert: t(".assign_invalid")
+      end
+    rescue ActiveRecord::RecordInvalid
+      redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
+    rescue ActiveRecord::StatementInvalid => e
+      raise unless e.cause.is_a?(PG::ExclusionViolation)
+
+      @reservation.errors.add(:starts_at, :slot_taken)
+      redirect_to admin_reservations_path, alert: @reservation.errors.full_messages.to_sentence
+    end
+
+  private
 
     def set_reservation
       @reservation = Reservation.find(params[:id])

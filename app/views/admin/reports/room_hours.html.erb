@@ -1,48 +1,52 @@
-<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-  <h1 class="text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
-  <%= link_to "#{t('.export')} ↓", admin_room_hours_report_path(format: :xlsx, from: @from, to: @to),
-        class: "rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500" %>
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= @from %> — <%= @to %></p>
+  </div>
+  <%= link_to admin_room_hours_report_path(format: :xlsx, from: @from, to: @to), class: "btn btn--gold !py-2.5 !text-sm" do %>
+    <%= t(".export") %> ↓
+  <% end %>
 </div>
 
-<form action="<%= admin_room_hours_report_path %>" method="get" class="mb-6 flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4">
+<form action="<%= admin_room_hours_report_path %>" method="get" class="glass mb-6 flex flex-wrap items-end gap-4 p-4">
   <div>
-    <label class="block text-xs font-medium uppercase text-slate-500"><%= t(".from") %></label>
-    <input type="date" name="from" value="<%= @from %>" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <label class="label"><%= t(".from") %></label>
+    <input type="date" name="from" value="<%= @from %>" class="field !w-auto !py-2 !text-sm">
   </div>
   <div>
-    <label class="block text-xs font-medium uppercase text-slate-500"><%= t(".to") %></label>
-    <input type="date" name="to" value="<%= @to %>" class="mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <label class="label"><%= t(".to") %></label>
+    <input type="date" name="to" value="<%= @to %>" class="field !w-auto !py-2 !text-sm">
   </div>
-  <button class="cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"><%= t(".apply") %></button>
+  <button class="btn btn--aurora !py-2.5 !text-sm"><%= t(".apply") %></button>
 </form>
 
-<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-  <table class="w-full text-left text-sm">
-    <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+<div class="glass overflow-x-auto p-0">
+  <table class="table-dark">
+    <thead>
       <tr>
-        <th class="px-4 py-3"><%= Zone.model_name.human %></th>
-        <th class="px-4 py-3"><%= t("admin.reports.room_type") %></th>
-        <th class="px-4 py-3"><%= t("admin.reports.bookings") %></th>
-        <th class="px-4 py-3"><%= t("admin.reports.hours") %></th>
-        <th class="px-4 py-3"><%= t("admin.reports.revenue") %></th>
+        <th><%= Zone.model_name.human %></th>
+        <th><%= t("admin.reports.room_type") %></th>
+        <th><%= t("admin.reports.bookings") %></th>
+        <th><%= t("admin.reports.hours") %></th>
+        <th><%= t("admin.reports.revenue") %></th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-slate-100">
+    <tbody>
       <% @rows.each do |row| %>
         <tr>
-          <td class="px-4 py-3 font-medium text-slate-900"><%= row.zone %></td>
-          <td class="px-4 py-3 text-slate-500"><%= row.zone.room_type_label %></td>
-          <td class="px-4 py-3"><%= row.bookings %></td>
-          <td class="px-4 py-3"><%= number_with_precision(row.hours, precision: 1) %></td>
-          <td class="px-4 py-3"><%= money(row.revenue_cents) %></td>
+          <td class="font-medium text-white"><%= row.zone %></td>
+          <td class="text-slate-400"><%= row.zone.room_type_label %></td>
+          <td class="num"><%= row.bookings %></td>
+          <td class="num"><%= number_with_precision(row.hours, precision: 1) %></td>
+          <td class="num font-semibold text-star-300"><%= money(row.revenue_cents) %></td>
         </tr>
       <% end %>
-      <tr class="border-t-2 border-slate-200 bg-slate-50 font-semibold">
-        <td class="px-4 py-3 text-slate-900"><%= t("admin.reports.total") %></td>
+      <tr class="border-t-2 border-white/10 bg-white/[0.03] font-semibold">
+        <td class="text-white"><%= t("admin.reports.total") %></td>
         <td></td>
-        <td class="px-4 py-3"><%= @totals.bookings %></td>
-        <td class="px-4 py-3"><%= number_with_precision(@totals.hours, precision: 1) %></td>
-        <td class="px-4 py-3"><%= money(@totals.revenue_cents) %></td>
+        <td class="num text-white"><%= @totals.bookings %></td>
+        <td class="num text-white"><%= number_with_precision(@totals.hours, precision: 1) %></td>
+        <td class="num text-star-300"><%= money(@totals.revenue_cents) %></td>
       </tr>
     </tbody>
   </table>

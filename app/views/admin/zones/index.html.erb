@@ -1,40 +1,51 @@
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
-  <%= link_to t(".new"), new_admin_zone_path, class: "rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500" %>
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= t(".count", count: @zones.size) %></p>
+  </div>
+  <%= link_to new_admin_zone_path, class: "btn btn--aurora !py-2.5 !text-sm" do %>
+    <%= icon :sparkle, css_class: "h-4 w-4" %>
+    <%= t(".new") %>
+  <% end %>
 </div>
 
 <% if @zones.any? %>
-  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-    <table class="w-full text-left text-sm">
-      <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+  <div class="glass overflow-x-auto p-0">
+    <table class="table-dark">
+      <thead>
         <tr>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:name) %></th>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:capacity) %></th>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:floor) %></th>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:hourly_rate_cents) %></th>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:requires_approval) %></th>
-          <th class="px-4 py-3"><%= Zone.human_attribute_name(:active) %></th>
-          <th class="px-4 py-3"></th>
+          <th><%= Zone.human_attribute_name(:name) %></th>
+          <th><%= Zone.human_attribute_name(:capacity) %></th>
+          <th><%= Zone.human_attribute_name(:floor) %></th>
+          <th><%= Zone.human_attribute_name(:hourly_rate_cents) %></th>
+          <th><%= Zone.human_attribute_name(:requires_approval) %></th>
+          <th><%= Zone.human_attribute_name(:active) %></th>
+          <th></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody>
         <% @zones.each do |zone| %>
           <tr>
-            <td class="px-4 py-3 font-medium text-slate-900"><%= link_to zone, zone_path(zone) %></td>
-            <td class="px-4 py-3"><%= zone.capacity %></td>
-            <td class="px-4 py-3"><%= zone.floor %></td>
-            <td class="px-4 py-3"><%= money(zone.hourly_rate_cents) %></td>
-            <td class="px-4 py-3"><%= zone.requires_approval ? "✔" : "—" %></td>
-            <td class="px-4 py-3">
-              <span class="<%= zone.active? ? "text-emerald-600" : "text-slate-400" %>"><%= zone.active? ? "●" : "○" %></span>
+            <td class="font-medium text-white">
+              <%= link_to zone, zone_path(zone), class: "link-aurora" %>
+              <span class="block text-xs text-slate-500"><%= zone.room_type_label %></span>
             </td>
-            <td class="px-4 py-3 text-right text-sm">
-              <%= link_to t("admin.zones.form.submit"), edit_admin_zone_path(zone), class: "font-medium text-indigo-600 hover:text-indigo-800" %>
-              <% if policy(zone).destroy? %>
-                <%= button_to t("admin.zones.destroy.destroyed"), admin_zone_path(zone), method: :delete,
-                      form: { data: { turbo_confirm: "Удалить зону «#{zone}»?" } },
-                      class: "ml-3 cursor-pointer font-medium text-rose-600 hover:text-rose-800" %>
-              <% end %>
+            <td class="num"><%= zone.capacity %></td>
+            <td class="num"><%= zone.floor %></td>
+            <td class="num font-semibold text-star-300"><%= money(zone.hourly_rate_cents) %></td>
+            <td><span class="text-slate-500"><%= zone.requires_approval ? "•" : "—" %></span></td>
+            <td>
+              <span class="badge <%= zone.active? ? "badge--confirmed" : "badge--cancelled" %>"><%= zone.active? ? t(".active") : t(".inactive") %></span>
+            </td>
+            <td>
+              <div class="flex justify-end gap-1.5">
+                <%= link_to t("admin.actions.edit"), edit_admin_zone_path(zone), class: "a-btn a-btn--ghost" %>
+                <% if policy(zone).destroy? %>
+                  <%= button_to t("admin.actions.destroy"), admin_zone_path(zone), method: :delete,
+                        form: { data: { turbo_confirm: "Удалить зону «#{zone}»?" } },
+                        class: "a-btn a-btn--danger" %>
+                <% end %>
+              </div>
             </td>
           </tr>
         <% end %>
@@ -42,5 +53,5 @@
     </table>
   </div>
 <% else %>
-  <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400"><%= t(".empty") %></p>
+  <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
 <% end %>

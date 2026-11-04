@@ -9,9 +9,9 @@ module Admin
       respond_to do |format|
         format.html
         format.xlsx do
-          xlsx = Reports::RoomHoursXlsx.new(from: @from, to: @to, rows: @rows, totals: @totals).build
-          send_data xlsx,
-                    filename: "polaris-room-hours-#{@from}-#{@to}.xlsx",
+          export = Reports::RoomHoursXlsx.new(from: @from, to: @to, rows: @rows, totals: @totals)
+          send_data export.build,
+                    filename: export.filename,
                     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         end
       end

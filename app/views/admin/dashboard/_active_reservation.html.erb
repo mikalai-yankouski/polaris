@@ -1,15 +1,18 @@
-<div class="rounded-2xl border border-slate-200 bg-white p-4"
+<div class="glass p-5"
      data-controller="countdown"
      data-countdown-ends-at-value="<%= reservation.ends_at.iso8601 %>"
      data-countdown-warning-seconds-value="600"
-     data-base-class="rounded-2xl border border-slate-200 bg-white p-4"
-     data-warning-class="rounded-2xl border border-amber-300 bg-amber-50 p-4"
-     data-overdue-class="rounded-2xl border border-rose-400 bg-rose-50 p-4">
+     data-base-class="glass p-5"
+     data-warning-class="glass p-5 !border-star-400/50 !bg-star-500/10"
+     data-overdue-class="glass p-5 !border-rose-400/50 !bg-rose-500/10">
   <div class="flex items-center justify-between gap-3">
-    <div>
-      <p class="font-semibold text-slate-900"><%= reservation.zone %> <span class="text-xs font-normal text-slate-400">до <%= l(reservation.ends_at, format: :time_only) %></span></p>
-      <p class="text-sm text-slate-500"><%= reservation.user %> · <%= reservation.guests_count %> чел.</p>
+    <div class="min-w-0">
+      <p class="truncate font-semibold text-white">
+        <%= reservation.zone %>
+        <span class="text-xs font-normal text-slate-500">до <%= l(reservation.ends_at, format: :time_only) %></span>
+      </p>
+      <p class="truncate text-sm text-slate-400"><%= reservation.client_name %> · <%= reservation.guests_count %> чел.</p>
     </div>
-    <p data-countdown-target="label" class="font-mono text-2xl font-bold tabular-nums text-slate-900">--:--</p>
+    <p data-countdown-target="label" class="heading-display shrink-0 text-2xl font-semibold tabular-nums text-white">--:--</p>
   </div>
 </div>

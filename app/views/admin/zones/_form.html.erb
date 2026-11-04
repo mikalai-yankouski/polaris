@@ -1,5 +1,5 @@
 <% if zone.errors.any? %>
-  <div class="mb-6 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+  <div class="flash flash--alert mb-6">
     <ul class="list-inside list-disc">
       <% zone.errors.full_messages.each do |message| %>
         <li><%= message %></li>
@@ -8,129 +8,188 @@
   </div>
 <% end %>
 
-<%= form_with model: zone, url: zone.new_record? ? admin_zones_path : admin_zone_path(zone), class: "space-y-5" do |form| %>
-  <div class="grid gap-5 sm:grid-cols-2">
+<%= form_with model: zone, url: zone.new_record? ? admin_zones_path : admin_zone_path(zone), class: "space-y-8" do |form| %>
+  <%# ---------- Основное ---------- %>
+  <fieldset class="grid gap-5 sm:grid-cols-2">
     <div class="sm:col-span-2">
-      <%= form.label :name, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.text_field :name, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :name, class: "label" %>
+      <%= form.text_field :name, required: true, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :building_code, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.text_field :building_code, placeholder: "2-8", class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :building_code, class: "label" %>
+      <%= form.text_field :building_code, placeholder: "2-8", class: "field" %>
     </div>
 
     <div>
-      <%= form.label :room_type, class: "block text-sm font-medium text-slate-700" %>
+      <%= form.label :room_type, class: "label" %>
       <%= form.select :room_type,
             options_for_select(Zone.room_types.map { |t, _| [I18n.t(t, scope: "room_types"), t] }, zone.room_type),
-            {}, { class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" } %>
-    </div>
-
-    <div>
-      <%= form.label :cleaning_buffer_minutes, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :cleaning_buffer_minutes, min: 0, max: 120, step: 5, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
-      <p class="mt-1 text-xs text-slate-400"><%= t("admin.zones.form.children_party_hint") %></p>
+            {}, { class: "field" } %>
     </div>
 
     <div class="sm:col-span-2">
-      <%= form.label :description, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.text_area :description, rows: 3, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :description, class: "label" %>
+      <%= form.text_area :description, rows: 3, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :building_id, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.collection_select :building_id, Building.all, :id, :name, { prompt: true }, { class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" } %>
+      <%= form.label :building_id, class: "label" %>
+      <%= form.collection_select :building_id, Building.all, :id, :name, { prompt: true }, { class: "field" } %>
     </div>
 
     <div>
-      <%= form.label :floor, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :floor, min: 0, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :floor, class: "label" %>
+      <%= form.number_field :floor, min: 0, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :capacity, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :capacity, min: 1, required: true, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :capacity, class: "label" %>
+      <%= form.number_field :capacity, min: 1, required: true, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :hourly_rate_cents, "#{Zone.human_attribute_name(:hourly_rate_cents)} (коп.)", class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :hourly_rate_cents, min: 0, step: 50, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :hourly_rate_cents, "#{Zone.human_attribute_name(:hourly_rate_cents)} (коп.)", class: "label" %>
+      <%= form.number_field :hourly_rate_cents, min: 0, step: 50, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :min_duration_minutes, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :min_duration_minutes, min: 15, step: 15, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :min_duration_minutes, class: "label" %>
+      <%= form.number_field :min_duration_minutes, min: 15, step: 15, class: "field" %>
     </div>
 
     <div>
-      <%= form.label :max_duration_minutes, class: "block text-sm font-medium text-slate-700" %>
-      <%= form.number_field :max_duration_minutes, min: 30, step: 30, class: "mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm focus:outline-indigo-600" %>
+      <%= form.label :max_duration_minutes, class: "label" %>
+      <%= form.number_field :max_duration_minutes, min: 30, step: 30, class: "field" %>
     </div>
 
-    <div class="sm:col-span-2">
-      <%= form.label :amenity_ids, Zone.human_attribute_name(:amenities), class: "block text-sm font-medium text-slate-700" %>
-      <div class="mt-2 flex flex-wrap gap-3">
+    <div>
+      <%= form.label :cleaning_buffer_minutes, class: "label" %>
+      <%= form.number_field :cleaning_buffer_minutes, min: 0, max: 120, step: 5, class: "field" %>
+      <p class="mt-1.5 text-xs text-slate-500"><%= t("admin.zones.form.children_party_hint") %></p>
+    </div>
+
+    <%# Флаги ---------- %>
+    <div class="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+      <label class="toggle-row">
+        <%= form.check_box :requires_approval %>
+        <%= Zone.human_attribute_name(:requires_approval) %>
+      </label>
+      <label class="toggle-row">
+        <%= form.check_box :active %>
+        <%= Zone.human_attribute_name(:active) %>
+      </label>
+    </div>
+  </fieldset>
+
+  <div class="hairline"></div>
+
+  <%# ---------- Удобства и смежные зоны ---------- %>
+  <fieldset class="grid gap-5">
+    <div>
+      <%= form.label :amenity_ids, Zone.human_attribute_name(:amenities), class: "label" %>
+      <div class="flex flex-wrap gap-2">
         <%= form.collection_check_boxes :amenity_ids, Amenity.all, :id, :name do |b| %>
-          <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-            <%= b.check_box class: "rounded" %> <%= b.text %>
+          <label class="toggle-row !py-2 !text-[0.8rem]">
+            <%= b.check_box %><%= b.text %>
           </label>
         <% end %>
       </div>
     </div>
 
-    <label class="flex items-center gap-3 text-sm font-medium text-slate-700">
-      <%= form.check_box :requires_approval, class: "rounded" %> <%= Zone.human_attribute_name(:requires_approval) %>
-    </label>
-
-    <label class="flex items-center gap-3 text-sm font-medium text-slate-700">
-      <%= form.check_box :active, class: "rounded" %> <%= Zone.human_attribute_name(:active) %>
-    </label>
-
-    <div class="sm:col-span-2">
-      <%= form.label :adjacent_zone_ids, Zone.human_attribute_name(:adjacent_zones), class: "block text-sm font-medium text-slate-700" %>
-      <div class="mt-2 flex flex-wrap gap-3">
+    <div>
+      <%= form.label :adjacent_zone_ids, Zone.human_attribute_name(:adjacent_zones), class: "label" %>
+      <div class="flex flex-wrap gap-2">
         <%= form.collection_check_boxes :adjacent_zone_ids, Zone.where.not(id: zone.id).ordered, :id, :to_s do |b| %>
-          <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-            <%= b.check_box class: "rounded" %> <%= b.text %>
+          <label class="toggle-row !py-2 !text-[0.8rem]">
+            <%= b.check_box %><%= b.text %>
           </label>
         <% end %>
       </div>
-      <p class="mt-1 text-xs text-slate-400"><%= t("admin.zones.form.adjacency_hint") %></p>
+      <p class="mt-1.5 text-xs text-slate-500"><%= t("admin.zones.form.adjacency_hint") %></p>
     </div>
-  </div>
+  </fieldset>
 
-  <fieldset class="mt-6 rounded-xl border border-slate-200 p-4" data-controller="price-rules">
-    <legend class="px-2 text-sm font-semibold text-slate-700"><%= t("admin.zones.form.price_rules") %></legend>
-    <p class="mb-3 text-xs text-slate-400"><%= t("admin.zones.form.price_rules_hint") %></p>
+  <div class="hairline"></div>
 
-    <table class="w-full text-sm">
-      <thead class="text-left text-xs uppercase text-slate-400">
-        <tr>
-          <th class="pb-2 pr-3"><%= PriceRule.human_attribute_name(:day_kind) %></th>
-          <th class="pb-2 pr-3"><%= t("admin.zones.form.time_window") %></th>
-          <th class="pb-2 pr-3"><%= PriceRule.human_attribute_name(:hourly_rate_cents) %> (коп.)</th>
-          <th class="pb-2"></th>
-        </tr>
-      </thead>
-      <tbody data-price-rules-target="rows">
-        <%= form.fields_for :price_rules do |rule_form| %>
+  <%# ---------- Фото зала ---------- %>
+  <fieldset>
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <%= form.label :photos, t(".photos"), class: "label !mb-0" %>
+      <p class="text-xs text-slate-500"><%= t(".photos_hint") %></p>
+    </div>
+
+    <% if zone.photos.attached? %>
+      <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <% cover_id = zone.cover_attachment_id || zone.photos.first&.id %>
+        <% zone.photos.each do |photo| %>
+          <div class="overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02]">
+            <%= image_tag photo, class: "aspect-video w-full object-cover", alt: "" %>
+            <div class="flex items-center justify-between gap-2 px-2.5 py-2 text-xs">
+              <label class="flex cursor-pointer items-center gap-1.5 text-slate-300">
+                <%= form.radio_button :cover_photo_id, photo.id, checked: photo.id == cover_id %>
+                <%= t(".make_cover") %>
+              </label>
+              <label class="flex cursor-pointer items-center gap-1.5 text-rose-300">
+                <%= check_box_tag "zone[remove_photo_ids][]", photo.id %>
+                <%= t(".remove_photo") %>
+              </label>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= form.file_field :photos, multiple: true, accept: "image/*",
+          class: "field mt-4 cursor-pointer text-sm text-slate-400 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-white/10 file:px-3.5 file:py-2 file:text-sm file:font-medium file:text-slate-200 hover:file:bg-white/15" %>
+  </fieldset>
+
+  <div class="hairline"></div>
+
+  <%# ---------- Тарифная сетка ---------- %>
+  <fieldset data-controller="price-rules">
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <%= form.label :price_rules, t("admin.zones.form.price_rules"), class: "label !mb-0" %>
+      <p class="text-xs text-slate-500"><%= t("admin.zones.form.price_rules_hint") %></p>
+    </div>
+
+    <div class="mt-4 overflow-x-auto rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3">
+      <table class="w-full text-sm">
+        <thead class="text-left text-[0.65rem] uppercase tracking-widest text-slate-500">
+          <tr>
+            <th class="pb-2 pr-3 font-semibold"><%= PriceRule.human_attribute_name(:day_kind) %></th>
+            <th class="pb-2 pr-3 font-semibold"><%= t("admin.zones.form.time_window") %></th>
+            <th class="pb-2 pr-3 font-semibold"><%= PriceRule.human_attribute_name(:hourly_rate_cents) %> (коп.)</th>
+            <th class="pb-2"></th>
+          </tr>
+        </thead>
+        <tbody data-price-rules-target="rows">
+          <%= form.fields_for :price_rules do |rule_form| %>
+            <%= render "price_rule_fields", f: rule_form %>
+          <% end %>
+        </tbody>
+      </table>
+
+      <template data-price-rules-target="template">
+        <%= form.fields_for :price_rules, PriceRule.new, child_index: "NEW_RECORD" do |rule_form| %>
           <%= render "price_rule_fields", f: rule_form %>
         <% end %>
-      </tbody>
-    </table>
+      </template>
+    </div>
 
-    <template data-price-rules-target="template">
-      <%= form.fields_for :price_rules, PriceRule.new, child_index: "NEW_RECORD" do |rule_form| %>
-        <%= render "price_rule_fields", f: rule_form %>
-      <% end %>
-    </template>
-
-    <button type="button" data-action="price-rules#add"
-            class="mt-3 cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+    <button type="button" data-action="price-rules#add" class="a-btn a-btn--ghost mt-3">
       + <%= t("admin.zones.form.add_rule") %>
     </button>
   </fieldset>
 
-  <%= form.submit t(".submit"), class: "mt-6 cursor-pointer rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-500" %>
+  <%# ---------- Sticky-панель сохранения ---------- %>
+  <div class="sticky-save">
+    <p class="text-xs text-slate-500">
+      <%= t("admin.zones.form.rules_count", count: zone.price_rules.size) %>
+    </p>
+    <div class="flex items-center gap-2">
+      <%= link_to t("admin.zones.form.cancel"), admin_zones_path, class: "btn btn--ghost !py-2.5 !text-sm" %>
+      <%= form.submit t(".submit"), class: "btn btn--aurora !py-2.5 !text-sm" %>
+    </div>
+  </div>
 <% end %>

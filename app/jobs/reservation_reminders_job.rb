@@ -9,7 +9,7 @@ class ReservationRemindersJob < ApplicationJob
                .where(starts_at: Time.current..REMINDER_WINDOW_HOURS.hours.from_now)
                .where(reminder_sent_at: nil)
                .find_each do |reservation|
-      ReservationMailer.with(reservation:).reminder.deliver_later
+      ReservationMailer.deliver_if_user(reservation, :reminder)
       reservation.touch(:reminder_sent_at)
     end
   end

@@ -135,8 +135,10 @@ if Reservation.count.zero?
     starts_at = day
     ends_at = day + duration.minutes
 
-    # избегаем пересечений внутри сидов: пропускаем, если слот занят
-    next if zone.blocked?(starts_at..ends_at)
+    # избегаем пересечений внутри сидов: пропускаем, если слот занят.
+    # Конец интервала расширен на максимальный буфер уборки (30 минут) —
+    # именно с ним конфликт проверяет exclusion constraint в БД.
+    next if zone.blocked?(starts_at..(ends_at + 30.minutes))
 
     user = (members + [ manager ]).sample(random:)
     status = case random.rand(10)

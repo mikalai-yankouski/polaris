@@ -9,19 +9,34 @@ class Reservation < ApplicationRecord
   CHILDREN_CLEANING_MINUTES = 30
 
   belongs_to :zone
-  belongs_to :user
+  # Клиенты бронируют без аккаунта — пользователь только у броней персонала
+  belongs_to :user, optional: true
   has_many :payments, dependent: :destroy
 
   enum :status, { pending: 0, confirmed: 1, declined: 2, cancelled: 3, completed: 4 }, default: :pending
 
-  scope :blocking, -> { where(status: [ statuses[:pending], statuses[:confirmed] ]) }
+  # Поля гостевой заявки: дата обязательна, время — по желанию (согласуем по телефону).
+  # Слот (starts_at/ends_at) собирается в контроллере из этих полей.
+  # Длительность — booking_duration: имя duration_minutes занято вычисляемым методом.
+  attr_accessor :booking_date, :start_time, :booking_duration
+
+  # Заявка без слота не занимает расписание: время согласуется по телефону
+  scope :blocking, -> { where(status: [ statuses[:pending], statuses[:confirmed] ]).where.not(starts_at: nil) }
+  scope :slotless, -> { pending.where(starts_at: nil) }
   scope :upcoming, -> { blocking.where(ends_at: Time.current..).order(:starts_at) }
   scope :active_now, -> { blocking.where(starts_at: ..Time.current).where(ends_at: Time.current..).order(:ends_at) }
   scope :between, ->(range) { where(starts_at: range) }
   scope :paid, -> { where(status: [ statuses[:confirmed], statuses[:completed] ]) }
 
-  validates :starts_at, :ends_at, presence: true
   validates :guests_count, numericality: { only_integer: true, greater_than: 0 }
+  # Гостевая бронь: идентифицируем клиента по имени и телефону
+  validates :guest_name, presence: true, if: -> { user.blank? }
+  validates :guest_phone, presence: true, if: -> { user.blank? }
+  validates :guest_phone, format: { with: /\A\+?[\d\s()-]{9,25}\z/ }, allow_blank: true
+  # Слот — дата+время или ничего: оба конца или оба NULL
+  validate :slot_presence
+  # Заявка без слота всё равно знает желаемую дату
+  validates :requested_date, presence: true, if: -> { starts_at.blank? && ends_at.blank? }
   validate :ends_after_start
   validate :starts_in_future, on: :create
   validate :duration_within_limits
@@ -33,13 +48,20 @@ class Reservation < ApplicationRecord
 
   before_validation :compute_price, if: -> { new_record? }
   before_validation :snapshot_cleaning_minutes
-  after_create :auto_approve, if: -> { zone && !zone.requires_approval }
+  # Автоподтверждение имеет смысл только для заявки со слотом
+  after_create :auto_approve, if: -> { zone && !zone.requires_approval && starts_at.present? }
 
   def duration_minutes
     return 0 unless starts_at && ends_at
 
     ((ends_at - starts_at) / 60).to_i
   end
+
+  # Заявка с согласованным временем
+  def slot? = starts_at.present? && ends_at.present?
+
+  # Заявка ждёт согласования времени по телефону
+  def slotless? = !slot?
 
   # Окно, на которое комната фактически занята (бронь + уборка)
   def blocked_until = ends_at + cleaning_minutes.minutes
@@ -54,17 +76,26 @@ class Reservation < ApplicationRecord
     end
   end
 
-  def blocking? = pending? || confirmed?
+  def blocking? = slot? && (pending? || confirmed?)
   def payable? = !paid? && blocking?
 
-  def confirmable?  = pending?
+  # Подтвердить можно только заявку со согласованным временем
+  def confirmable?  = pending? && slot?
   def declinable?   = pending?
   def cancellable?  = pending? || confirmed?
   def completable?  = confirmed? && ends_at < Time.current
-  def extendable?   = pending? || confirmed?
+  def extendable?   = slot? && (pending? || confirmed?)
 
   def status_label(value = status)
     I18n.t(value, scope: "reservation_statuses", default: value.to_s.humanize)
+  end
+
+  # Представление клиента в админке: имя аккаунта или имя гостя
+  def client_name = user&.name || guest_name
+
+  # Контакт клиента: телефон пользователя, иначе email; у гостя — телефон
+  def client_contact
+    user ? user.phone.presence || user.email_address : guest_phone
   end
 
   def confirm!
@@ -85,6 +116,18 @@ class Reservation < ApplicationRecord
   def complete!
     assert_transition!(:completed)
     update!(status: :completed)
+  end
+
+  # Назначение времени заявке, пришедшей без слота: ставим интервал,
+  # пересчитываем цену по действующим тарифам и снапшотим уборку.
+  def assign_slot!(starts_at:, duration_minutes:)
+    self.starts_at = starts_at
+    self.ends_at = starts_at + duration_minutes.minutes
+    snapshot_cleaning_minutes
+    self.total_price_cents = Reservations::PriceCalculator.new(zone:).total_cents(self.starts_at, self.ends_at)
+    save!
+  rescue ActiveRecord::RecordInvalid
+    raise
   end
 
   # Продление на месте: шаг minutes минут, доплата за добавленный интервал
@@ -126,6 +169,13 @@ class Reservation < ApplicationRecord
       return unless zone
 
       self.cleaning_minutes = zone.cleaning_minutes_for(children_party: children_party?)
+    end
+
+    # Слот задаётся парой: либо оба конца, либо оба NULL
+    def slot_presence
+      return if starts_at.blank? == ends_at.blank?
+
+      errors.add(:starts_at, :slot_incomplete)
     end
 
     def ends_after_start

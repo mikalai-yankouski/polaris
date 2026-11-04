@@ -1,24 +1,23 @@
 Rails.application.routes.draw do
-  root "zones#index"
+  # Лендинг на корне; полный каталог — на /zones
+  root "zones#landing"
+  get "zones", to: "zones#index"
 
-  resource :session
+  # Восстановление пароля — только по токену из письма (публичных ссылок нет)
   resources :passwords, param: :token
-  resource :registration, only: %i[new create]
 
-  resources :zones, only: %i[index show] do
+  # Клиенты бронируют без аккаунта (имя + телефон); персонал входит по спец-ссылке /admin/session.
+  # Просмотр и управление бронями — только в админке, публичного раздела броней нет
+  resources :zones, only: %i[show] do
     resources :reservations, only: :create
-  end
-  resources :reservations, only: %i[index] do
-    member { post :cancel }
-  end
-  resources :reservations, only: [] do
-    resource :payment, only: :create # POST /reservations/:reservation_id/payment
   end
 
   # Публичный webhook bePaid (Basic Auth + Content-Signature)
   post "bepaid/webhook", to: "bepaid_webhooks#create", as: :bepaid_webhook
 
   namespace :admin do
+    # Спец-ссылка входа для персонала (вручную вводится в браузере)
+    resource :session, only: %i[new create destroy]
     root "dashboard#show"
     get "schedule", to: "schedule#show", as: :schedule
     get "reports/room_hours", to: "reports#room_hours", as: :room_hours_report
@@ -30,11 +29,14 @@ Rails.application.routes.draw do
         post :complete
         post :extend
         post :record_on_site
+        # Заявка без времени: назначаем слот по телефону с гостем
+        post :assign_time
       end
     end
     resources :zones, except: :show
     resources :amenities, only: %i[index create edit update destroy]
-    resources :users, only: %i[index update]
+    # База клиентов из гостевых броней (телефон обязателен при бронировании)
+    resources :clients, only: :index
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

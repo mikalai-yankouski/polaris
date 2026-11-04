@@ -1,0 +1,31 @@
+module Admin
+  # Вход персонала по спец-ссылке /admin/session — публичной регистрации и
+  # клиентских аккаунтов нет; клиенты бронируют по имени и телефону
+  class SessionsController < ApplicationController
+    layout "application"
+
+    allow_unauthenticated_access only: %i[new create]
+    rate_limit to: 10, within: 3.minutes, only: :create,
+               with: -> { redirect_to new_admin_session_path, alert: t(".rate_limited") }
+
+    def new
+    end
+
+    def create
+      user = User.authenticate_by(params.permit(:email_address, :password))
+
+      if user&.staff?
+        start_new_session_for user
+        redirect_to after_authentication_url
+      else
+        # Не раскрываем причину отказа: неверные данные или не персонал
+        redirect_to new_admin_session_path, alert: t(".invalid_credentials"), status: :see_other
+      end
+    end
+
+    def destroy
+      terminate_session
+      redirect_to new_admin_session_path, status: :see_other
+    end
+  end
+end

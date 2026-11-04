@@ -30,7 +30,10 @@ module ApplicationHelper
     cinema: '<path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
     karaoke: '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
     billiard: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/>',
-    ps5: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>'
+    ps5: '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+    chevron_down: '<path d="m6 9 6 6 6-6"/>',
+    chevron_left: '<path d="m15 18-6-6 6-6"/>',
+    chevron_right: '<path d="m9 18 6-6-6-6"/>'
   }.freeze
 
   def icon(name, css_class: nil)
@@ -76,5 +79,32 @@ module ApplicationHelper
     classes = %w[nav-link]
     classes << "nav-link--active" if current_page?(options)
     link_to name, options, class: classes.join(" "), &
+  end
+
+  # Ссылка сайдбара админки: иконка + подпись + активное состояние
+  def side_link(name, path, icon_name = nil)
+    classes = %w[side-link]
+    classes << "side-link--active" if current_page?(path)
+    link_to path, class: classes.join(" ") do
+      safe_join([ icon(icon_name), ERB::Util.html_escape(name) ])
+    end
+  end
+
+  # Время начала в гостевой заявке: шаг 30 минут
+  def booking_time_options
+    (0...48).map { |i| format("%02d:%02d", i / 2, i.even? ? 0 : 30) }
+  end
+
+  # Длительность в гостевой заявке: от минимума до максимума зоны, шаг 30 минут
+  def booking_duration_options(zone)
+    (zone.min_duration_minutes..zone.max_duration_minutes).step(30).map do |minutes|
+      [duration_text(minutes), minutes]
+    end
+  end
+
+  # Длительность по умолчанию — ближе к двум часам
+  def booking_duration_default(zone)
+    steps = (zone.min_duration_minutes..zone.max_duration_minutes).step(30).to_a
+    steps.min_by { |minutes| (minutes - 120).abs } || zone.min_duration_minutes
   end
 end

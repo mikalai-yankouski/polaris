@@ -1,28 +1,41 @@
 class ReservationMailer < ApplicationMailer
   helper :application
 
+  # Гостевые брони (без пользователя) идут без email — письма не отправляем
+  def self.deliver_if_user(reservation, action)
+    mail = with(reservation:).public_send(action)
+    mail&.deliver_later
+  end
+
   def submitted
-    @reservation = params[:reservation]
-    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+    mail_to_user t(".subject", zone: reservation.zone)
   end
 
   def confirmed
-    @reservation = params[:reservation]
-    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+    mail_to_user t(".subject", zone: reservation.zone)
   end
 
   def declined
-    @reservation = params[:reservation]
-    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+    mail_to_user t(".subject", zone: reservation.zone)
   end
 
   def reminder
-    @reservation = params[:reservation]
-    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+    mail_to_user t(".subject", zone: reservation.zone)
   end
 
   def paid
-    @reservation = params[:reservation]
-    mail to: @reservation.user.email_address, subject: t(".subject", zone: @reservation.zone)
+    mail_to_user t(".subject", zone: reservation.zone)
   end
+
+  private
+
+    def reservation
+      @reservation ||= params[:reservation]
+    end
+
+    def mail_to_user(subject)
+      return nil if reservation.user.blank?
+
+      mail to: reservation.user.email_address, subject:
+    end
 end

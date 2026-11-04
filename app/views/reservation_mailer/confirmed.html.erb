@@ -2,6 +2,6 @@
 
 <p><%= t(".body", zone: @reservation.zone, starts: l(@reservation.starts_at, format: :short), ends: l(@reservation.ends_at, format: :time_only)) %></p>
 
-<p><%= link_to t("reservations.index.title"), reservations_url %></p>
+<p><%= link_to t("admin.nav.reservations"), admin_reservations_url %></p>
 
-<p style="color: #888; font-size: 12px;"><%= t(".footer") %></p>
+<p style="color: #888; font-size: 12px;"><%= t("reservation_mailer.footer") %></p>

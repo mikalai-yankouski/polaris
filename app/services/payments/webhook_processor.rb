@@ -44,7 +44,7 @@ module Payments
 
       if status == "successful"
         payment.update!(paid_at: Time.current)
-        ReservationMailer.with(reservation: payment.reservation).paid.deliver_later
+        ReservationMailer.deliver_if_user(payment.reservation, :paid)
       end
     end
 

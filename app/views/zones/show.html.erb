@@ -1,4 +1,4 @@
-<% photo = @zone.photos.attached? ? @zone.photos.first : nil %>
+<% photo = @zone.cover_photo %>
 
 <%# ---------- Кинематографичный баннер зоны ---------- %>
 <section class="relative mx-auto max-w-6xl px-4">
@@ -42,23 +42,13 @@
       </span>
     </div>
 
-    <% if authenticated? %>
-      <% if Bepaid::Config.configured? %>
-        <p class="mt-4 flex items-start gap-2.5 rounded-xl border border-aurora-300/20 bg-aurora-500/10 px-4 py-3 text-sm text-aurora-300">
-          <%= icon :credit_card, css_class: "mt-0.5 h-4 w-4 shrink-0" %>
-          <%= t(".prepayment_note") %>
-        </p>
-      <% end %>
-      <%= render "reservations/form", zone: @zone, reservation: @reservation %>
-    <% else %>
-      <p class="mt-5 text-sm leading-relaxed text-slate-400"><%= t(".sign_in_to_book") %></p>
-      <p class="mt-6">
-        <%= link_to new_session_path, class: "btn btn--aurora" do %>
-          <%= t("layouts.nav.sign_in") %>
-          <%= icon :arrow_right, css_class: "h-4 w-4" %>
-        <% end %>
+    <% if Bepaid::Config.configured? %>
+      <p class="mt-4 flex items-start gap-2.5 rounded-xl border border-aurora-300/20 bg-aurora-500/10 px-4 py-3 text-sm text-aurora-300">
+        <%= icon :credit_card, css_class: "mt-0.5 h-4 w-4 shrink-0" %>
+        <%= t(".prepayment_note") %>
       </p>
     <% end %>
+    <%= render "reservations/form", zone: @zone, reservation: @reservation %>
   </section>
 
   <%# ---------- Правая колонка: правила, удобства, занятость ---------- %>
@@ -91,29 +81,5 @@
         </div>
       </div>
     <% end %>
-
-    <div class="reveal" style="--reveal-delay: .15s">
-      <div class="mb-4 flex items-center justify-between">
-        <p class="kicker"><%= t(".upcoming") %></p>
-      </div>
-      <% if @reservations.any? %>
-        <div class="glass divide-y divide-white/[0.06] px-6">
-          <% @reservations.each do |reservation| %>
-            <div class="flex items-center justify-between gap-4 py-4 text-sm">
-              <span class="flex items-center gap-2.5 font-medium text-slate-200">
-                <%= icon :calendar, css_class: "h-4 w-4 text-slate-500" %>
-                <%= l(reservation.starts_at, format: :short) %> — <%= l(reservation.ends_at, format: :time_only) %>
-              </span>
-              <%= status_badge(reservation) %>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="glass flex items-center gap-3 p-5 text-sm text-emerald-300">
-          <%= icon :check_circle, css_class: "h-5 w-5 shrink-0" %>
-          <%= t(".no_upcoming") %>
-        </p>
-      <% end %>
-    </div>
   </div>
 </div>

@@ -1,11 +1,14 @@
-<div class="mb-8 flex items-end justify-between">
-  <h1 class="text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
-  <%= link_to t("admin.nav.reservations"), admin_reservations_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-800" %>
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= t(".subtitle") %></p>
+  </div>
+  <%= link_to t("admin.nav.reservations"), admin_reservations_path, class: "btn btn--ghost !py-2.5 !text-sm" %>
 </div>
 
 <% if @active_reservations.any? %>
   <section class="mb-8">
-    <h2 class="mb-4 font-semibold text-slate-900"><%= t(".active_now") %></h2>
+    <p class="kicker mb-4"><%= t(".active_now") %></p>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <% @active_reservations.each do |reservation| %>
         <%= render "active_reservation", reservation: %>
@@ -15,50 +18,75 @@
 <% end %>
 
 <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-  <%= render "stat_card", label: t(".total_reservations"), value: @dashboard.total_reservations %>
-  <%= render "stat_card", label: t(".total_guests"), value: @dashboard.total_guests %>
-  <%= render "stat_card", label: t(".revenue"), value: money(@dashboard.revenue_cents) %>
-  <%= render "stat_card", label: t(".utilization"), value: number_to_percentage(@dashboard.avg_utilization, precision: 1) %>
+  <% stats = [[t(".total_reservations"), @dashboard.total_reservations, :calendar],
+              [t(".total_guests"), @dashboard.total_guests, :users],
+              [t(".revenue"), money(@dashboard.revenue_cents), :credit_card],
+              [t(".utilization"), number_to_percentage(@dashboard.avg_utilization, precision: 1), :zap]] %>
+  <% stats.each do |label, value, icon_name| %>
+    <div class="glass spotlight p-5">
+      <div class="flex items-start justify-between gap-3">
+        <span class="text-sm text-slate-400"><%= label %></span>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-star-400">
+          <%= icon icon_name, css_class: "h-4 w-4" %>
+        </span>
+      </div>
+      <p class="heading-display mt-3 text-2xl font-semibold text-white"><%= value %></p>
+    </div>
+  <% end %>
 </div>
 
 <% if @dashboard.total_reservations.zero? %>
-  <p class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center text-slate-400"><%= t(".empty") %></p>
+  <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
 <% else %>
-  <div class="grid gap-6 lg:grid-cols-2">
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".reservations_by_day") %></h2>
-      <%= line_chart @dashboard.reservations_by_day, colors: ["#4f46e5"], library: { plugins: { legend: { display: false } } } %>
+  <div class="grid gap-5 lg:grid-cols-2">
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".reservations_by_day") %></p>
+      <div class="chart-well mt-4">
+        <%= line_chart @dashboard.reservations_by_day, **admin_line_options(color: "#9A8BFA") %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".revenue_by_week") %></h2>
-      <%= column_chart @dashboard.revenue_by_week.map { |week, cents| [week, cents / 100.0] },
-            suffix: " BYN", colors: ["#0ea5e9"], library: { plugins: { legend: { display: false } } } %>
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".revenue_by_week") %></p>
+      <div class="chart-well mt-4">
+        <%= column_chart @dashboard.revenue_by_week.map { |week, cents| [week, cents / 100.0] },
+              **admin_chart_options(suffix: " BYN", colors: ["#F2D58A"]) %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".bookings_by_weekday") %></h2>
-      <%= column_chart @dashboard.bookings_by_weekday, colors: ["#f59e0b"], library: { plugins: { legend: { display: false } } } %>
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".bookings_by_weekday") %></p>
+      <div class="chart-well mt-4">
+        <%= column_chart @dashboard.bookings_by_weekday, **admin_chart_options(colors: ["#FCD34D"]) %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".bookings_by_hour") %></h2>
-      <%= column_chart @dashboard.bookings_by_hour, colors: ["#10b981"], library: { plugins: { legend: { display: false } } } %>
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".bookings_by_hour") %></p>
+      <div class="chart-well mt-4">
+        <%= column_chart @dashboard.bookings_by_hour, **admin_chart_options(colors: ["#45E0C8"]) %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".status_breakdown") %></h2>
-      <%= pie_chart @dashboard.status_breakdown %>
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".status_breakdown") %></p>
+      <div class="chart-well mt-4">
+        <%= pie_chart @dashboard.status_breakdown, **admin_status_donut_options(@dashboard.status_breakdown) %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".top_zones") %></h2>
-      <%= bar_chart @dashboard.top_zones, colors: ["#4f46e5"], library: { plugins: { legend: { display: false } } } %>
+    <section class="glass p-6">
+      <p class="kicker"><%= t(".top_zones") %></p>
+      <div class="chart-well mt-4">
+        <%= bar_chart @dashboard.top_zones, **admin_chart_options(colors: ["#5B8CFF"]) %>
+      </div>
     </section>
 
-    <section class="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
-      <h2 class="mb-4 font-semibold text-slate-900"><%= t(".utilization_by_zone") %></h2>
-      <%= bar_chart @dashboard.utilization_by_zone, suffix: "%", colors: ["#8b5cf6"], library: { plugins: { legend: { display: false } } } %>
+    <section class="glass p-6 lg:col-span-2">
+      <p class="kicker"><%= t(".utilization_by_zone") %></p>
+      <div class="chart-well mt-4">
+        <%= bar_chart @dashboard.utilization_by_zone, **admin_chart_options(suffix: "%", colors: ["#9A8BFA"]) %>
+      </div>
     </section>
   </div>
 <% end %>

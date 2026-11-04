@@ -1,6 +1,13 @@
 ru:
   app_name: "Polaris"
-  tagline: "Бронирование лаундж-зон"
+  datetime:
+    distance_in_words:
+      x_hours:
+        one: "%{count} час"
+        few: "%{count} часа"
+        many: "%{count} часов"
+        other: "%{count} часов"
+  tagline: "Бронирование залов"
   hours_short: "ч"
   minutes_short: "мин"
 
@@ -19,10 +26,6 @@ ru:
     declined: "Отклонена"
     cancelled: "Отменена"
     completed: "Завершена"
-  user_roles:
-    member: "Член клуба"
-    manager: "Менеджер"
-    admin: "Администратор"
   room_types:
     lounge: "Лаундж"
     cinema: "Кинокомната"
@@ -47,7 +50,7 @@ ru:
       unpaid: "Не оплачено"
     checkout:
       not_payable: "Эту бронь уже нельзя оплатить"
-      not_configured: "Онлайн-оплата временно недоступна — мы уже работаем над этим. Оплатите на месте при визите."
+      not_configured: "Оплата картой сейчас недоступна. Можно оплатить на месте при визите."
       description: "Polaris — бронь «%{zone}»"
 
   pundit:
@@ -57,14 +60,30 @@ ru:
 
   admin:
     access_denied: "Доступ только для персонала"
+    sidebar:
+      overview: "Обзор"
+      management: "Управление"
+      analytics: "Аналитика"
+      view_site: "Открыть сайт"
+    sessions:
+      new:
+        title: "Вход для персонала"
+        subtitle: "Рабочий логин и пароль сотрудника"
+        submit: "Войти"
+      create:
+        invalid_credentials: "Неверный email или пароль"
+        rate_limited: "Слишком много попыток. Попробуйте позже."
     nav:
       dashboard: "Дашборд"
       schedule: "Шахматка"
       reservations: "Брони"
       zones: "Зоны"
       amenities: "Удобства"
-      users: "Пользователи"
+      clients: "Клиенты"
       reports: "Отчёты"
+    actions:
+      edit: "Изменить"
+      destroy: "Удалить"
     schedule:
       show:
         title: "Шахматка занятости"
@@ -80,7 +99,17 @@ ru:
       bookings: "Броней"
       hours: "Часов"
       revenue: "Выручка"
+      revenue_byn: "Выручка, BYN"
       total: "Итого"
+      summary: "Сводка за период"
+      empty: "За период подтверждённых броней нет"
+      kpi:
+        days: "Дней в периоде"
+        active_zones: "Комнат с бронями"
+        avg_revenue: "Выручка на бронь, BYN"
+        avg_duration: "Средняя длительность брони, ч"
+        revenue_per_day: "Выручка в день, BYN"
+        hours_per_day: "Занятых часов в день"
       room_hours:
         title: "Занятые часы по комнатам"
         from: "С"
@@ -89,6 +118,7 @@ ru:
         export: "Excel"
     dashboard:
       show:
+        subtitle: "Ключевые метрики за 30 дней"
         active_now: "Сейчас в комнатах"
         title: "Аналитика за 30 дней"
         total_reservations: "Броней"
@@ -109,13 +139,25 @@ ru:
         filter_status: "Статус"
         filter_zone: "Зона"
         all: "Все"
+        all_zones: "Все зоны"
+        apply: "Показать"
+        count:
+          one: "%{count} бронь"
+          few: "%{count} брони"
+          many: "%{count} броней"
+          other: "%{count} броней"
         confirm: "Подтвердить"
         decline: "Отклонить"
         cancel: "Отменить"
         complete: "Завершить"
+        time_to_agree: "время уточняется"
+        assign_time: "Назначить"
         empty: "Броней не найдено"
       confirm:
         confirmed: "Бронь %{name} подтверждена"
+      assign_time:
+        assigned: "Заявке %{name} назначено время: %{starts}"
+        assign_invalid: "Укажите дату-время и длительность"
       decline:
         declined: "Бронь %{name} отклонена"
         default_note: "Зона недоступна в указанное время"
@@ -132,6 +174,13 @@ ru:
         title: "Зоны"
         new: "Добавить зону"
         empty: "Зон пока нет"
+        active: "Активна"
+        inactive: "Скрыта"
+        count:
+          one: "%{count} зона"
+          few: "%{count} зоны"
+          many: "%{count} зон"
+          other: "%{count} зон"
       new:
         title: "Новая зона"
       edit:
@@ -146,17 +195,29 @@ ru:
         submit: "Сохранить"
         children_party_hint: "После детских — уборка 30 минут вместо стандартной"
         adjacency_hint: "Смежные комнаты: караоке-брони не ставим в соседние одновременно"
+        photos: "Фото зала"
+        photos_hint: "Отметьте обложку для каталога и фото на удаление, затем сохраните"
+        make_cover: "Обложка"
+        remove_photo: "Удалить"
         price_rules: "Тарифная сетка (будни/выходные × время суток)"
         price_rules_hint: "Цена за час в копейках; минуты вне окон тарифицируются базовой ставкой комнаты"
         time_window: "Окно времени"
         add_rule: "добавить тариф"
         remove_rule: "Удалить"
+        cancel: "Отмена"
+        rules_count:
+          one: "%{count} правило тарифов"
+          few: "%{count} правила тарифов"
+          many: "%{count} правил тарифов"
+          other: "%{count} правил тарифов"
     amenities:
       index:
         title: "Удобства"
         new_placeholder: "Например: Проектор"
         add: "Добавить"
         zones_count: "зон"
+      edit:
+        submit: "Сохранить"
       create:
         created: "Удобство добавлено"
       update:
@@ -164,135 +225,128 @@ ru:
       destroy:
         destroyed: "Удобство удалено"
         in_use: "Нельзя удалить: удобство используется в зонах"
-    users:
+    clients:
       index:
-        title: "Пользователи"
-        reservations_count: "броней"
-      update:
-        updated: "Роль %{name} обновлена"
+        title: "Клиенты"
+        count:
+          one: "%{count} клиент"
+          few: "%{count} клиента"
+          many: "%{count} клиентов"
+          other: "%{count} клиентов"
+        name: "Имя"
+        phone: "Телефон"
+        reservations_count: "Броней"
+        first_booking: "Первая бронь"
+        last_booking: "Последняя бронь"
+        empty: "Гостей пока нет"
 
   layouts:
     nav:
-      zones: "Лаундж-зоны"
-      my_reservations: "Мои брони"
+      zones: "Залы"
       admin: "Админка"
-      sign_in: "Войти"
-      sign_up: "Регистрация"
       sign_out: "Выйти"
 
   zones:
+    landing:
+      hero_title: "Ваш вечер"
+      hero_title_accent: "начнётся здесь"
+      hero_subtitle: "Лаундж, кинокомната, караоке, бильярд и PlayStation. Выберите зал и время, оставьте имя и телефон. Мы перезвоним и подтвердим бронь."
+      hero_cta: "Выбрать зал"
+      stat_spaces: "залов для отдыха"
+      stat_formats: "формата: кино, караоке, бильярд, PS5, лаундж"
+      stat_online: "заявка занимает минуту"
+      all_zones: "Все залы"
+      feature_1_title: "Заявка за минуту"
+      feature_1_text: "Оставьте имя и телефон, остальное подтвердим по звонку."
+      feature_2_title: "Оплата картой или на месте"
+      feature_2_text: "Онлайн через bePaid сразу после заявки или наличными при визите."
+      feature_3_title: "Зал под вашу компанию"
+      feature_3_text: "От кинокомнаты на четверых до караоке-холла на двенадцать."
     index:
-      title: "Пространства"
-      subtitle: "Выберите пространство и забронируйте его на удобное время"
+      title: "Наши залы"
+      subtitle: "Цена за час и свободное время по каждому залу"
       empty: "Активных зон пока нет"
       capacity: "до %{count} гостей"
       floor: "%{count} этаж"
+      kicker: "Каталог"
       count:
-        one: "%{count} пространство"
-        few: "%{count} пространства"
-        many: "%{count} пространств"
-        other: "%{count} пространств"
-      kicker: "Пространства"
-      stat_spaces: "пространств для отдыха"
-      stat_formats: "формата: лаундж, кино, караоке, бильярд, PS5"
-      stat_online: "онлайн-бронирование 24/7"
-      hero_title: "Ваш вечер"
-      hero_title_accent: "начнётся здесь"
-      hero_subtitle: "Лаундж, кинокомната, караоке, бильярд и PlayStation. Выберите пространство, укажите время — и оно ваше."
-      hero_cta: "Выбрать пространство"
-      feature_1_title: "Бронь за минуту"
-      feature_1_text: "Выберите зону и время — статус брони придёт на почту, следите за ним в «Мои брони»."
-      feature_2_title: "Оплата как удобно"
-      feature_2_text: "Картой онлайн через bePaid или на месте при визите — как вам комфортнее."
-      feature_3_title: "Для любой компании"
-      feature_3_text: "От камерной комнаты до большого лаунджа — с удобствами и приватностью на борту."
+        one: "%{count} зал"
+        few: "%{count} зала"
+        many: "%{count} залов"
+        other: "%{count} залов"
     show:
       book: "Забронировать"
       price: "%{amount} / час"
       rules: "Правила"
-      min_duration: "Минимальная длительность — %{duration}"
-      max_duration: "Максимальная длительность — %{duration}"
+      min_duration: "Минимальная бронь: %{duration}"
+      max_duration: "Максимальная бронь: %{duration}"
       approval_required: "Бронь требует подтверждения администратора"
       approval_required_short: "подтверждение администратора"
       auto_confirm: "Бронь подтверждается автоматически"
-      auto_confirm_short: "мгновенное подтверждение"
-      prepayment_note: "После создания брони вы перейдёте к онлайн-оплате картой (bePaid). Бронь считается подтверждённой после оплаты."
-      upcoming: "Занятость"
-      no_upcoming: "Свободна — предстоящих броней нет"
+      auto_confirm_short: "подтверждение сразу"
+      prepayment_note: "После заявки откроется страница оплаты картой. Бронь подтверждается после оплаты."
       guests_capacity: "вместимость"
       amenities: "Удобства"
-      sign_in_to_book: "Войдите, чтобы забронировать это пространство"
 
   reservations:
-    index:
-      kicker: "Личный кабинет"
-      browse: "Выбрать пространство"
-      title: "Мои брони"
-      upcoming: "Предстоящие"
-      past: "История"
-      empty_upcoming: "Предстоящих броней нет"
-      empty_past: "История пуста"
-      cancel: "Отменить"
-      cancel_confirm: "Отменить бронь?"
     create:
-      created: "Заявка создана — следите за статусом в разделе «Мои брони»"
-    cancel:
-      cancelled: "Бронь отменена"
+      created: "Заявка принята. Перезвоним и подтвердим бронь."
     form:
       title: "Бронирование зоны"
-      starts_at: "Начало"
-      ends_at: "Завершение"
+      start_time: "Время начала"
+      time_optional: "Согласуем по телефону"
+      start_time_hint: "Не обязательно: подберём свободное окно и перезвоним"
+      duration_minutes: "Длительность"
       guests_count: "Гостей"
-      purpose: "Цель (необязательно)"
-      calc_total: "Итого по тарифам"
-      children_party_hint: "после брони — уборка 30 минут"
-      submit: "Забронировать"
+      purpose: "Повод (необязательно)"
+      calc_total: "Стоимость"
+      guest_name_placeholder: "Как к вам обращаться"
+      children_party_hint: "после него уборка дольше обычной"
+      submit: "Отправить заявку"
 
-  registrations:
-    new:
-      title: "Регистрация"
-      submit: "Зарегистрироваться"
-    create:
-      welcome: "Добро пожаловать! Ваш аккаунт создан."
-
-  sessions:
-    new:
-      title: "Вход"
-      submit: "Войти"
-      sign_up_hint: "Нет аккаунта?"
 
   passwords:
     new:
       title: "Восстановление пароля"
       submit: "Отправить ссылку"
       forgot: "Забыли пароль?"
+    create:
+      sent: "Инструкции отправлены (если пользователь с таким email существует)"
+      rate_limited: "Слишком много попыток. Попробуйте позже."
+    update:
+      reset: "Пароль изменён"
+      mismatch: "Пароли не совпадают"
+      invalid_token: "Ссылка восстановления недействительна или устарела"
     edit:
       title: "Новый пароль"
       submit: "Сохранить пароль"
 
   reservation_mailer:
     submitted:
-      subject: "Заявка на бронирование «%{zone}» принята"
-      heading: "Ваша заявка принята!"
-      body: "Заявка на бронирование зоны «%{zone}» на %{starts} отправлена на рассмотрение. Мы сообщим, когда её подтвердят."
+      subject: "Заявка на «%{zone}» принята"
+      heading: "Заявка принята"
+      body: "Заявка на «%{zone}» на %{starts} у нас. Сообщим, когда подтвердим."
+      body_no_slot: "Заявка на «%{zone}» на %{date} у нас. Перезвоним, согласуем время и подтвердим."
     confirmed:
       subject: "Бронь «%{zone}» подтверждена"
-      heading: "Ваша бронь подтверждена"
-      body: "Зона «%{zone}» забронирована на %{starts}–%{ends}. Ждём вас!"
+      heading: "Бронь подтверждена"
+      body: "Зал «%{zone}» ваш: %{starts}–%{ends}. Ждём вас!"
     declined:
-      subject: "Заявка на «%{zone}» отклонена"
-      heading: "К сожалению, заявка отклонена"
-      body: "Заявка на «%{zone}» на %{starts} отклонена."
+      subject: "Заявка на «%{zone}» не прошла"
+      heading: "Заявка отклонена"
+      body: "Зал «%{zone}» на %{starts} недоступен."
+      body_no_slot: "Зал «%{zone}» на %{date} недоступен."
       reason: "Причина: %{note}"
+      pick_another: "Выбрать другое время"
     reminder:
-      subject: "Напоминание: «%{zone}» завтра"
-      heading: "Скоро ваша встреча"
-      body: "Напоминаем: бронь зоны «%{zone}» на %{starts}. До встречи!"
+      subject: "Скоро бронь «%{zone}»"
+      heading: "Напоминаем про бронь"
+      body: "Зал «%{zone}» на %{starts}. До встречи!"
     paid:
       subject: "Оплата брони «%{zone}» получена"
       heading: "Бронь оплачена"
-      body: "Спасибо! Оплата %{amount} за бронь «%{zone}» на %{starts} получена. До встречи!"
-    footer: "Это автоматическое письмо приложения Polaris."
+      body: "Оплата %{amount} за «%{zone}» на %{starts} получена. До встречи!"
+    footer: "Письмо отправлено автоматически, отвечать на него не нужно."
 
   activerecord:
     models:
@@ -332,14 +386,20 @@ ru:
       reservation:
         zone: "Зона"
         user: "Автор"
+        guest_name: "Ваше имя"
+        guest_phone: "Телефон"
+        booking_date: "Дата"
+        start_time: "Время начала"
+        duration_minutes: "Длительность"
         starts_at: "Начало"
-        ends_at: "Завершение"
-        guests_count: "Гостей"
-        purpose: "Цель"
+        ends_at: "Конец"
+        guests_count: "Сколько гостей"
+        purpose: "Повод"
         status: "Статус"
         total_price_cents: "Стоимость"
         review_note: "Комментарий"
         children_party: "Детское мероприятие"
+        requested_date: "Желаемая дата"
       price_rule:
         day_kind: "Будни/выходные"
         starts_at_time: "Начало окна"
@@ -355,6 +415,7 @@ ru:
       messages:
         before_start: "должно быть позже начала"
         in_past: "не может быть в прошлом"
+        slot_incomplete: "заполнено только начало интервала: укажите и дату, и время"
         slot_taken: "занято: на это время уже есть активная бронь (с учётом уборки)"
         duration_too_short: "слишком короткая бронь (минимум %{min} ч)"
         duration_too_long: "слишком долгая бронь (максимум %{max} ч)"

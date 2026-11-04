@@ -63,12 +63,17 @@ module Analytics
 
     def utilization_by_zone
       available_hours = days_count * DAILY_WINDOW_HOURS
-      zones.index_with do |zone|
+      zones.to_h do |zone|
         booked_seconds = zone.reservations.paid.where(starts_at: period).sum("EXTRACT(EPOCH FROM (ends_at - starts_at))")
-        next 0 if available_hours.zero?
 
-        booked_hours = booked_seconds / 3600.0
-        [ (booked_hours / available_hours * 100).round(1), 100.0 ].min
+        # sum() по SQL-выражению возвращает BigDecimal, который ActiveSupport
+        # сериализует в JSON как строку — Chart.js тогда рисует "[object Object]".
+        booked_hours = booked_seconds.to_f / 3600.0
+        utilization = available_hours.zero? ? 0 : [ (booked_hours / available_hours * 100).round(1), 100.0 ].min
+
+        # Ключи-объекты Zone chartkick сериализует как вложенный JSON,
+        # а подписи осей превращаются в "[object Object]" — ключ должен быть строкой.
+        [ zone.to_s, utilization ]
       end
     end
 

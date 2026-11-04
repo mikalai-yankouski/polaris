@@ -1,7 +1,11 @@
 <%= t(".heading") %>
 
+<% if @reservation.slot? %>
 <%= t(".body", zone: @reservation.zone, starts: l(@reservation.starts_at, format: :short)) %>
+<% else %>
+<%= t(".body_no_slot", zone: @reservation.zone, date: @reservation.requested_date.strftime("%d.%m.%Y")) %>
+<% end %>
 
-<%= reservations_url %>
+<%= admin_reservations_url %>
 
-<%= t(".footer") %>
+<%= t("reservation_mailer.footer") %>

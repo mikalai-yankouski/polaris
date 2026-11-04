@@ -30,8 +30,9 @@ module Authentication
     end
 
     def request_authentication
-      session[:return_to_after_authenticating] = request.url
-      redirect_to new_session_path
+      # Возврат только на GET-адрес: POST-ссылки после входа бесполезны
+      session[:return_to_after_authenticating] = request.get? ? request.url : root_url
+      redirect_to new_admin_session_path
     end
 
     def after_authentication_url

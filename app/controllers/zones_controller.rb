@@ -1,17 +1,20 @@
 class ZonesController < ApplicationController
-  allow_unauthenticated_access(only: %i[index show])
+  allow_unauthenticated_access(only: %i[landing index show])
   before_action :set_zone, only: :show
 
+  # Лендинг на корне: hero + тизер зон + преимущества
+  def landing
+    @zones = policy_scope(Zone)
+  end
+
+  # Полный каталог пространств
   def index
     @zones = policy_scope(Zone)
   end
 
+  # Занятость зон видит только персонал в админке — на сайте её нет
   def show
     authorize @zone
-    @reservations = @zone.reservations.blocking
-                         .where(starts_at: Time.current..)
-                         .order(:starts_at)
-                         .limit(50)
     @reservation = Reservation.new(zone: @zone)
   end
 

@@ -87,6 +87,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    host: <%= ENV["DB_HOST"] %>
     database: polaris_production
     username: polaris
     password: <%= ENV["POLARIS_DATABASE_PASSWORD"] %>

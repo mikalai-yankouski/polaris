@@ -1,24 +1,21 @@
 class ReservationsController < ApplicationController
-  before_action :set_reservation, only: :cancel
-
-  def index
-    @upcoming = policy_scope(Reservation).upcoming.includes(:zone, :payments)
-    @past = policy_scope(Reservation).where.not(status: %w[pending confirmed]).order(starts_at: :desc).includes(:zone, :payments)
-  end
+  # Гость бронирует без аккаунта; управление бронями — только в админке
+  allow_unauthenticated_access only: :create
 
   def create
     @zone = Zone.active.find(params[:zone_id])
-    @reservation = current_user.reservations.build(reservation_params.merge(zone: @zone))
+    @reservation = Reservation.new(reservation_params.merge(zone: @zone, user: current_user))
     authorize @reservation
 
     if @reservation.save
-      ReservationMailer.with(reservation: @reservation).submitted.deliver_later
+      ReservationMailer.deliver_if_user(@reservation, :submitted)
 
-      # Предоплата: сразу уводим на страницу bePaid (если настроен)
+      # Предоплата: сразу уводим на страницу bePaid (если настроен и слот известен).
+      # Возврат — на страницу зоны: управление бронями доступно только персоналу
       if Bepaid::Config.configured? && @reservation.payable?
         result = Payments::Checkout.call(
           reservation: @reservation,
-          return_url: reservations_url,
+          return_url: zone_url(@zone),
           notification_url: bepaid_webhook_url
         )
         if result.success?
@@ -27,9 +24,8 @@ class ReservationsController < ApplicationController
         end
       end
 
-      redirect_to reservations_path, notice: t(".created")
+      redirect_to @zone, notice: @reservation.slot? ? t(".created") : t(".created_slotless")
     else
-      @reservations = @zone.reservations.blocking.where(starts_at: Time.current..).order(:starts_at).limit(50)
       render "zones/show", status: :unprocessable_entity
     end
   rescue ActiveRecord::StatementInvalid => e
@@ -37,25 +33,34 @@ class ReservationsController < ApplicationController
     raise unless e.cause.is_a?(PG::ExclusionViolation)
 
     @reservation.errors.add(:starts_at, :slot_taken)
-    @reservations = @zone.reservations.blocking.where(starts_at: Time.current..).order(:starts_at).limit(50)
     render "zones/show", status: :unprocessable_entity
-  end
-
-  def cancel
-    authorize @reservation
-    @reservation.cancel!
-    redirect_to reservations_path, notice: t(".cancelled")
-  rescue ActiveRecord::RecordInvalid
-    redirect_to reservations_path, alert: @reservation.errors.full_messages.to_sentence
   end
 
   private
 
     def reservation_params
-      params.require(:reservation).permit(:starts_at, :ends_at, :guests_count, :purpose, :children_party)
+      permitted = params.require(:reservation)
+                         .permit(:booking_date, :start_time, :booking_duration, :guests_count,
+                                 :purpose, :children_party, :guest_name, :guest_phone)
+      permitted[:requested_date] = permitted_date
+      permitted.merge!(slot_params)
     end
 
-    def set_reservation
-      @reservation = Reservation.find(params[:id])
+    # Слот собираем из даты и времени начала; время не обязательно —
+    # без него заявка уходит персоналу на согласование по телефону
+    def slot_params
+      date = permitted_date
+      time = params.dig(:reservation, :start_time).presence
+      return {} if date.blank? || time.blank?
+
+      duration = params.dig(:reservation, :booking_duration).presence&.to_i || @zone.min_duration_minutes
+      starts_at = date.beginning_of_day + Time.parse(time).seconds_since_midnight.seconds
+      { starts_at:, ends_at: starts_at + duration.minutes }
+    end
+
+    def permitted_date
+      Date.parse(params.dig(:reservation, :booking_date).to_s)
+    rescue ArgumentError, TypeError
+      nil
     end
 end

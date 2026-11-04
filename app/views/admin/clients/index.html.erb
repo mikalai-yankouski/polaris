@@ -1,0 +1,37 @@
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= t(".count", count: @clients.length) %></p>
+  </div>
+</div>
+
+<% if @clients.any? %>
+  <div class="glass overflow-x-auto p-0">
+    <table class="table-dark">
+      <thead>
+        <tr>
+          <th><%= t(".name") %></th>
+          <th><%= t(".phone") %></th>
+          <th><%= t(".reservations_count") %></th>
+          <th><%= t(".first_booking") %></th>
+          <th><%= t(".last_booking") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @clients.each do |client| %>
+          <tr>
+            <td class="font-medium text-white"><%= client.name.presence || "—" %></td>
+            <td class="num">
+              <%= link_to client.phone, "tel:#{client.phone.gsub(/[^\d+]/, '')}", class: "text-slate-300 underline-offset-4 transition-colors hover:text-white hover:underline" %>
+            </td>
+            <td class="num"><%= client.reservations_count %></td>
+            <td class="num text-slate-400"><%= l(client.first_booked_at, format: :short) if client.first_booked_at %></td>
+            <td class="num text-slate-400"><%= l(client.last_booked_at, format: :short) if client.last_booked_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
+<% end %>

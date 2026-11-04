@@ -27,6 +27,11 @@ class Zone < ApplicationRecord
 
   def to_s = [ building_code, name ].compact.join(" · ")
 
+  # Обложка — выбранная админом или первая из загруженных
+  def cover_photo
+    photos.find { |photo| photo.id == cover_attachment_id } || photos.first
+  end
+
   def room_type_label
     I18n.t(room_type, scope: "room_types", default: room_type.to_s.humanize)
   end

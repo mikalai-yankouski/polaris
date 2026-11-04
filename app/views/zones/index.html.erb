@@ -1,62 +1,11 @@
-<% room_type_counts = @zones.map(&:room_type).tally %>
-
-<%# ---------- Hero: созвездия ---------- %>
-<section class="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-4 pb-20 pt-4 text-center">
-  <canvas id="constellation" class="pointer-events-none absolute inset-0 h-full w-full opacity-70" aria-hidden="true"></canvas>
-
-  <p class="eyebrow hero-rise" style="--reveal-delay: .05s">
-    <%= icon :sparkle, css_class: "h-3.5 w-3.5 text-star-400" %>
-    <%= t("tagline") %>
-  </p>
-
-  <h1 class="display-1 hero-rise mt-8 max-w-5xl text-white" style="--reveal-delay: .15s">
-    <%= t(".hero_title") %>
-    <span class="text-gradient-aurora block"><%= t(".hero_title_accent") %></span>
-  </h1>
-
-  <p class="hero-rise mt-7 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg" style="--reveal-delay: .25s">
-    <%= t(".hero_subtitle") %>
-  </p>
-
-  <div class="hero-rise mt-10 flex flex-wrap items-center justify-center gap-4" style="--reveal-delay: .35s">
-    <%= link_to "#zones", class: "btn btn--aurora pulse-glow !px-7 !py-3.5 text-base", data: { turbo: false } do %>
-      <%= t(".hero_cta") %>
-      <%= icon :arrow_down, css_class: "h-4.5 w-4.5" %>
-    <% end %>
-    <% if authenticated? %>
-      <%= link_to t("layouts.nav.my_reservations"), reservations_path, class: "btn btn--ghost !px-6 !py-3.5" %>
-    <% else %>
-      <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "btn btn--ghost !px-6 !py-3.5" %>
-    <% end %>
-  </div>
-
-  <%# Стеклянная полоса статистики ---------- %>
-  <div class="hero-rise absolute inset-x-0 bottom-0 flex justify-center px-4 pb-7" style="--reveal-delay: .55s">
-    <div class="glass flex flex-wrap items-center justify-center divide-x divide-white/10 rounded-2xl py-3">
-      <div class="flex items-center gap-2.5 px-5 sm:px-7">
-        <span class="heading-display text-lg font-semibold text-white"><%= @zones.size %></span>
-        <span class="text-xs text-slate-400"><%= t(".stat_spaces") %></span>
-      </div>
-      <div class="flex items-center gap-2.5 px-5 sm:px-7">
-        <span class="heading-display text-lg font-semibold text-white"><%= room_type_counts.size %></span>
-        <span class="text-xs text-slate-400"><%= t(".stat_formats") %></span>
-      </div>
-      <div class="flex items-center gap-2.5 px-5 sm:px-7">
-        <%= icon :zap, css_class: "h-4 w-4 text-glow-300" %>
-        <span class="text-xs text-slate-400"><%= t(".stat_online") %></span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<%# ---------- Зоны: bento ---------- %>
-<section id="zones" class="relative mx-auto max-w-6xl scroll-mt-28 overflow-x-clip px-4 py-20">
+<%# ---------- Каталог пространств ---------- %>
+<section class="relative mx-auto max-w-6xl scroll-mt-28 overflow-x-clip px-4 pb-8 pt-6">
   <div class="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[42rem] max-w-[110vw] -translate-x-1/2 dots-bg" aria-hidden="true"></div>
 
   <div class="reveal mb-10 flex flex-wrap items-end justify-between gap-4">
     <div>
       <p class="kicker"><%= t(".kicker") %></p>
-      <h2 class="display-2 mt-3 text-white"><%= t(".title") %></h2>
+      <h1 class="display-2 mt-3 text-white"><%= t(".title") %></h1>
       <p class="mt-2 text-slate-400"><%= t(".subtitle") %></p>
     </div>
     <span class="chip chip--gold"><%= icon :sparkle %> <%= t(".count", count: @zones.length) %></span>
@@ -65,7 +14,7 @@
   <% if @zones.any? %>
     <div class="grid auto-rows-[minmax(15rem,auto)] grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <% @zones.each_with_index do |zone, i| %>
-        <% photo = zone.photos.attached? ? zone.photos.first : nil %>
+        <% photo = zone.cover_photo %>
         <% featured = i.zero? %>
         <%= link_to zone_path(zone),
               class: "zone-card beam spotlight reveal #{'lg:col-span-2 lg:row-span-2' if featured}",
@@ -84,19 +33,19 @@
             <%= t("zones.show.price", amount: money(zone.hourly_rate_cents)) %>
           </span>
 
-          <div class="relative z-10 flex flex-wrap items-end justify-between gap-3 p-6">
+          <div class="relative z-10 flex flex-wrap items-end justify-between gap-3 p-6 pt-14">
             <div class="min-w-0">
               <div class="mb-3 flex flex-wrap gap-2">
                 <span class="chip"><%= icon zone.room_type.to_sym %> <%= zone.room_type_label %></span>
                 <span class="chip"><%= icon :users %> <%= t(".capacity", count: zone.capacity) %></span>
                 <span class="chip hidden sm:inline-flex"><%= icon :building %> <%= t(".floor", count: zone.floor) %></span>
               </div>
-              <h3 class="heading-display <%= 'text-2xl sm:text-3xl' if featured %> text-xl font-semibold text-white"><%= zone %></h3>
+              <h2 class="heading-display <%= 'text-2xl sm:text-3xl' if featured %> text-xl font-semibold text-white"><%= zone %></h2>
               <% if zone.description.present? %>
                 <p class="mt-2 max-w-md text-sm leading-relaxed text-slate-300/90 <%= 'line-clamp-2' unless featured %>"><%= zone.description %></p>
               <% end %>
             </div>
-            <span class="flex h-11 w-11 shrink-0 translate-y-2 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white opacity-0 backdrop-blur-md transition-all duration-500 group-hover:translate-y-0 [.zone-card:hover_&]:translate-y-0 [.zone-card:hover_&]:opacity-100">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white opacity-0 backdrop-blur-md transition-all duration-500 [.zone-card:hover_&]:translate-y-0 [.zone-card:hover_&]:opacity-100 translate-y-2">
               <%= icon :arrow_right, css_class: "h-4.5 w-4.5" %>
             </span>
           </div>
@@ -106,25 +55,4 @@
   <% else %>
     <p class="glass p-12 text-center text-slate-500"><%= t(".empty") %></p>
   <% end %>
-</section>
-
-<%# ---------- Преимущества ---------- %>
-<section class="relative mx-auto max-w-6xl px-4 py-16">
-  <div class="hairline mb-16"></div>
-
-  <% steps = [[t(".feature_1_title"), t(".feature_1_text")],
-              [t(".feature_2_title"), t(".feature_2_text")],
-              [t(".feature_3_title"), t(".feature_3_text")]] %>
-  <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
-    <% steps.each_with_index do |(title, text), i| %>
-      <div class="glass spotlight reveal relative overflow-hidden p-7" style="--reveal-delay: #{i * 0.1}s">
-        <span class="heading-display absolute -right-2 -top-4 text-7xl font-bold text-white/[0.04]"><%= format("%02d", i + 1) %></span>
-        <span class="flex h-12 w-12 items-center justify-center rounded-2xl border border-star-400/25 bg-star-500/10 text-star-400">
-          <%= icon [:zap, :credit_card, :shield][i], css_class: "h-5 w-5" %>
-        </span>
-        <h3 class="mt-5 text-lg font-semibold text-white"><%= title %></h3>
-        <p class="mt-2 text-sm leading-relaxed text-slate-400"><%= text %></p>
-      </div>
-    <% end %>
-  </div>
 </section>

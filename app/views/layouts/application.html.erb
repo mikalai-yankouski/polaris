@@ -30,43 +30,80 @@
   </head>
 
   <% if admin_section? %>
-    <body class="theme-admin min-h-screen bg-slate-50 text-slate-800 antialiased">
-      <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
-          <%= link_to root_path, class: "flex items-center gap-2 text-lg font-bold text-slate-900" do %>
-            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">P</span>
-            <%= t("app_name") %> <span class="text-sm font-medium text-slate-400">/ <%= t("layouts.nav.admin") %></span>
+    <body class="theme-dark min-h-screen antialiased">
+      <div class="sky sky--calm" aria-hidden="true">
+        <div class="aurora aurora--violet"></div>
+        <div class="aurora aurora--indigo"></div>
+      </div>
+
+      <%# Сайдбар (десктоп) %>
+      <aside class="admin-sidebar">
+        <%= link_to root_path, class: "logo-mark mb-4 px-2.5" do %>
+          <span class="logo-gem"><%= icon :sparkle, css_class: "h-4 w-4" %></span>
+          <span class="heading-display text-sm font-semibold tracking-wide text-white"><%= t("app_name") %></span>
+        <% end %>
+
+        <p class="side-group"><%= t("admin.sidebar.overview") %></p>
+        <%= side_link t("admin.nav.dashboard"), admin_root_path, :zap %>
+        <%= side_link t("admin.nav.schedule"), admin_schedule_path, :calendar %>
+
+        <p class="side-group"><%= t("admin.sidebar.management") %></p>
+        <%= side_link t("admin.nav.reservations"), admin_reservations_path, :clock %>
+        <%= side_link t("admin.nav.zones"), admin_zones_path, :building %>
+        <%= side_link t("admin.nav.amenities"), admin_amenities_path, :sparkle %>
+        <%= side_link t("admin.nav.clients"), admin_clients_path, :users %>
+
+        <p class="side-group"><%= t("admin.sidebar.analytics") %></p>
+        <%= side_link t("admin.nav.reports"), admin_room_hours_report_path, :check_circle %>
+
+        <div class="mt-auto space-y-1 border-t border-white/[0.07] pt-4">
+          <%= link_to root_path, class: "side-link" do %>
+            <%= icon :arrow_right, css_class: "rotate-180" %><%= t("admin.sidebar.view_site") %>
           <% end %>
+          <% if authenticated? %>
+            <div class="side-link cursor-default">
+              <span class="flex h-6 w-6 items-center justify-center rounded-full border border-star-400/30 bg-star-500/10 text-[0.6rem] font-semibold text-star-400"><%= current_user.name.to_s.first.upcase %></span>
+              <span class="truncate text-xs text-slate-400"><%= current_user %></span>
+            </div>
+            <%= button_to t("layouts.nav.sign_out"), admin_session_path, method: :delete, class: "side-link w-full cursor-pointer !justify-start" %>
+          <% end %>
+        </div>
+      </aside>
 
-          <nav class="flex items-center gap-6 text-sm">
-            <%= nav_link t("layouts.nav.zones"), zones_path %>
-            <% if authenticated? %>
-              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
-              <%= nav_link t("layouts.nav.admin"), admin_root_path %>
+      <div class="lg:pl-60">
+        <%# Мобильная навигация %>
+        <header class="sticky top-0 z-40 border-b border-white/[0.07] bg-night-950/75 backdrop-blur-xl lg:hidden">
+          <div class="flex items-center gap-3 px-4 py-3">
+            <%= link_to admin_root_path, class: "logo-mark" do %>
+              <span class="logo-gem !h-7 !w-7"><%= icon :sparkle, css_class: "h-3.5 w-3.5" %></span>
+              <span class="heading-display text-xs font-semibold text-white"><%= t("layouts.nav.admin") %></span>
             <% end %>
-          </nav>
-
-          <div class="ml-auto flex items-center gap-4 text-sm">
             <% if authenticated? %>
-              <span class="text-slate-500"><%= current_user %></span>
-              <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer font-medium text-slate-600 hover:text-slate-900" %>
+              <span class="ml-auto truncate text-xs text-slate-400"><%= current_user %></span>
+              <%= button_to t("layouts.nav.sign_out"), admin_session_path, method: :delete, class: "cursor-pointer text-xs font-medium text-slate-400 hover:text-white" %>
             <% end %>
           </div>
-        </div>
-      </header>
+          <nav class="flex gap-1.5 overflow-x-auto px-4 pb-3 text-sm">
+            <% [[t("admin.nav.dashboard"), admin_root_path], [t("admin.nav.schedule"), admin_schedule_path],
+                [t("admin.nav.reservations"), admin_reservations_path], [t("admin.nav.zones"), admin_zones_path],
+                [t("admin.nav.amenities"), admin_amenities_path], [t("admin.nav.clients"), admin_clients_path],
+                [t("admin.nav.reports"), admin_room_hours_report_path]].each do |label, path| %>
+              <%= link_to label, path, class: "chip #{'chip--gold' if current_page?(path)}" %>
+            <% end %>
+          </nav>
+        </header>
 
-      <main class="mx-auto max-w-7xl px-4 py-8">
-        <%= render "admin/shared/nav" %>
+        <main class="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+          <% if (notice = flash[:notice]) %>
+            <p class="flash flash--notice mb-6" id="notice"><%= notice %></p>
+          <% end %>
+          <% if (alert = flash[:alert]) %>
+            <p class="flash flash--alert mb-6" id="alert"><%= alert %></p>
+          <% end %>
 
-        <% if (notice = flash[:notice]) %>
-          <p class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 font-medium text-emerald-700" id="notice"><%= notice %></p>
-        <% end %>
-        <% if (alert = flash[:alert]) %>
-          <p class="mb-6 rounded-xl bg-rose-50 px-4 py-3 font-medium text-rose-700" id="alert"><%= alert %></p>
-        <% end %>
-
-        <%= yield %>
-      </main>
+          <%= yield %>
+        </main>
+      </div>
     </body>
   <% else %>
     <body class="theme-dark min-h-screen antialiased">
@@ -90,21 +127,21 @@
 
           <nav class="flex items-center gap-6">
             <%= nav_link t("layouts.nav.zones"), zones_path %>
-            <% if authenticated? %>
-              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
-              <% if current_user&.staff? %>
-                <%= nav_link t("layouts.nav.admin"), admin_root_path %>
-              <% end %>
+            <% if current_user&.staff? %>
+              <%= nav_link t("layouts.nav.admin"), admin_root_path %>
             <% end %>
           </nav>
 
           <div class="flex items-center gap-3">
+            <%# Публичного входа нет: клиенты бронируют без аккаунта, персонал — по спец-ссылке /admin/session %>
             <% if authenticated? %>
-              <span class="hidden text-sm text-slate-400 md:inline"><%= current_user %></span>
-              <%= button_to t("layouts.nav.sign_out"), session_path, method: :delete, class: "cursor-pointer text-sm font-medium text-slate-400 transition-colors hover:text-white" %>
-            <% else %>
-              <%= link_to t("layouts.nav.sign_in"), new_session_path, class: "text-sm font-medium text-slate-300 transition-colors hover:text-white" %>
-              <%= link_to t("layouts.nav.sign_up"), new_registration_path, class: "btn btn--aurora !rounded-full !px-4 !py-2 !text-sm" %>
+              <%# Отделяем аккаунт персонала от навигации: разделитель + инициал + кнопка выхода %>
+              <span class="h-5 w-px shrink-0 bg-white/15" aria-hidden="true"></span>
+              <span class="flex items-center gap-2">
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-star-400/30 bg-star-500/10 text-xs font-semibold text-star-400"><%= current_user.name.to_s.first.upcase %></span>
+                <span class="hidden text-sm text-slate-400 md:inline"><%= current_user %></span>
+              </span>
+              <%= button_to t("layouts.nav.sign_out"), admin_session_path, method: :delete, class: "cursor-pointer rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:border-white/30 hover:text-white" %>
             <% end %>
           </div>
         </div>
@@ -137,9 +174,6 @@
           </div>
           <nav class="flex items-center gap-6 text-sm">
             <%= nav_link t("layouts.nav.zones"), zones_path %>
-            <% if authenticated? %>
-              <%= nav_link t("layouts.nav.my_reservations"), reservations_path %>
-            <% end %>
           </nav>
         </div>
       </footer>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_093237) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "btree_gist"
   enable_extension "pg_catalog.plpgsql"
@@ -90,9 +90,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_093237) do
 
   create_table "reservations", force: :cascade do |t|
     t.bigint "zone_id", null: false
-    t.bigint "user_id", null: false
-    t.datetime "starts_at", null: false
-    t.datetime "ends_at", null: false
+    t.bigint "user_id"
+    t.datetime "starts_at"
+    t.datetime "ends_at"
     t.integer "guests_count", default: 1, null: false
     t.text "purpose"
     t.integer "status", default: 0, null: false
@@ -103,12 +103,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_093237) do
     t.datetime "reminder_sent_at"
     t.boolean "children_party", default: false, null: false
     t.integer "cleaning_minutes", default: 15, null: false
+    t.string "guest_name"
+    t.string "guest_phone"
+    t.date "requested_date"
+    t.index ["guest_phone"], name: "index_reservations_on_guest_phone"
     t.index ["status"], name: "index_reservations_on_status"
     t.index ["user_id", "created_at"], name: "index_reservations_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_reservations_on_user_id"
     t.index ["zone_id", "starts_at"], name: "index_reservations_on_zone_id_and_starts_at"
     t.index ["zone_id"], name: "index_reservations_on_zone_id"
-    t.exclusion_constraint "zone_id WITH =, tsrange(starts_at, (ends_at + make_interval(mins => cleaning_minutes)), '[)'::text) WITH &&", where: "status = ANY (ARRAY[0, 1])", using: :gist, name: "reservations_no_overlaps"
+    t.exclusion_constraint "zone_id WITH =, tsrange(starts_at, (ends_at + make_interval(mins => cleaning_minutes)), '[)'::text) WITH &&", where: "(status = ANY (ARRAY[0, 1])) AND (starts_at IS NOT NULL) AND (ends_at IS NOT NULL)", using: :gist, name: "reservations_no_overlaps"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -167,7 +171,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_093237) do
     t.integer "room_type", default: 0, null: false
     t.string "building_code"
     t.integer "cleaning_buffer_minutes", default: 15, null: false
+    t.bigint "cover_attachment_id"
     t.index ["building_id"], name: "index_zones_on_building_id"
+    t.index ["cover_attachment_id"], name: "index_zones_on_cover_attachment_id"
     t.index ["name"], name: "index_zones_on_name", unique: true
   end
 

@@ -3,6 +3,12 @@ import { Chart, registerables } from "chart.js"
 Chart.register(...registerables)
 window.Chart = Chart
 
+// Тёмная тема графиков (админка и публичные графики)
+Chart.defaults.color = "#9AA5C7"
+Chart.defaults.font.family = "Inter, system-ui, sans-serif"
+Chart.defaults.font.size = 11
+Chart.defaults.borderColor = "rgba(255, 255, 255, 0.07)"
+
 import "chartkick"
 import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"

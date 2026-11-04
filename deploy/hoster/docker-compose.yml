@@ -1,0 +1,70 @@
+# Polaris on the same Hoster.by VPS as coffee-pulse.by, separate stack.
+# Shares the existing Caddy (ports 80/443) via the varka_default network.
+# No domain yet: Caddy serves plain HTTP on the VPS IP (see Caddyfile.snippet).
+#
+#   docker compose up -d --build
+#   docker compose exec web bin/rails db:seed
+
+name: polaris
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: polaris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: polaris_production
+      TZ: Europe/Minsk
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - max_connections=40
+      - -c
+      - shared_buffers=64MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U polaris -d polaris_production"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    shm_size: 64mb
+
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: polaris-app
+    container_name: polaris-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Host for all four DBs (primary + cache/queue/cable in database.yml).
+      DB_HOST: postgres
+      POLARIS_DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      RAILS_ENV: production
+      TZ: Europe/Minsk
+      SOLID_QUEUE_IN_PUMA: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - /opt/polaris/storage:/rails/storage
+    networks:
+      - default
+      - proxy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H \"Host: $${APP_HOST}\" http://127.0.0.1/up || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
+
+networks:
+  proxy:
+    external: true
+    name: varka_default
+
+volumes:
+  postgres_data:

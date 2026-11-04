@@ -1,13 +1,13 @@
 class ReservationPolicy < ApplicationPolicy
-  def index? = user.present?
-
   def show? = owner? || staff?
 
-  def create? = user.present? && record.user_id == user.id
+  # Гость бронирует без аккаунта (user пуст); вошедший — только за себя
+  def create? = record.user.blank? || (user.present? && record.user_id == user.id)
 
-  def cancel? = (owner? || staff?) && record.cancellable?
-  def pay? = owner? && record.payable?
+  def cancel? = staff? && record.cancellable?
   def record_on_site? = staff? && record.payable?
+  # Назначение времени заявке, пришедшей без слота
+  def assign_time? = staff? && record.slotless?
 
   def confirm?  = staff? && record.confirmable?
   def decline?  = staff? && record.declinable?

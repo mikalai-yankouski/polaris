@@ -1,48 +1,46 @@
-<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-  <h1 class="text-3xl font-bold text-slate-900"><%= t(".title") %></h1>
+<div class="admin-page-head">
+  <div>
+    <h1 class="admin-title"><%= t(".title") %></h1>
+    <p class="admin-meta"><%= l(@date, format: "%A, %d.%m.%Y").capitalize %></p>
+  </div>
 
-  <div class="flex items-center gap-2">
-    <%= link_to "←", admin_schedule_path(date: @date - 1.day), class: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium hover:bg-slate-50" %>
-    <%= link_to t(".today"), admin_schedule_path(date: Date.current), class: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium hover:bg-slate-50" %>
-    <%= link_to "→", admin_schedule_path(date: @date + 1.day), class: "rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium hover:bg-slate-50" %>
+  <div class="flex flex-wrap items-center gap-2">
+    <%= link_to "←", admin_schedule_path(date: @date - 1.day), class: "a-btn a-btn--ghost !px-3" %>
+    <%= link_to t(".today"), admin_schedule_path(date: Date.current), class: "a-btn a-btn--ghost" %>
+    <%= link_to "→", admin_schedule_path(date: @date + 1.day), class: "a-btn a-btn--ghost !px-3" %>
     <form action="<%= admin_schedule_path %>" method="get" class="flex items-center gap-2">
-      <input type="date" name="date" value="<%= @date %>" onchange="this.form.requestSubmit()"
-             class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">
+      <input type="date" name="date" value="<%= @date %>" onchange="this.form.requestSubmit()" class="field !w-auto !py-2 !text-sm">
     </form>
   </div>
 </div>
 
-<p class="mb-4 text-sm text-slate-500">
-  <%= l(@date, format: "%A, %d.%m.%Y").capitalize %>
-</p>
-
-<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+<div class="glass overflow-x-auto p-0">
   <table class="w-full border-collapse text-xs">
     <thead>
-      <tr class="border-b border-slate-200 bg-slate-50">
-        <th class="sticky left-0 z-10 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-500"><%= Zone.model_name.human %></th>
+      <tr class="border-b border-white/[0.08]">
+        <th class="sticky left-0 z-10 bg-night-900/90 px-4 py-2.5 text-left font-semibold text-slate-400 backdrop-blur"><%= Zone.model_name.human %></th>
         <% @grid.hours.each do |hour| %>
-          <th class="px-1 py-2 text-center font-medium text-slate-500"><%= format("%02d", hour) %></th>
+          <th class="px-1 py-2.5 text-center font-medium text-slate-500"><%= format("%02d", hour) %></th>
         <% end %>
       </tr>
     </thead>
     <tbody>
       <% @zones.each do |zone| %>
-        <tr class="border-b border-slate-100 last:border-0">
-          <td class="sticky left-0 z-10 bg-white px-3 py-2 whitespace-nowrap">
-            <span class="font-semibold text-slate-800"><%= zone %></span>
-            <span class="ml-1 text-[10px] uppercase text-slate-400"><%= zone.room_type_label %></span>
+        <tr class="border-b border-white/[0.05] last:border-0">
+          <td class="sticky left-0 z-10 bg-night-900/90 px-4 py-2.5 whitespace-nowrap backdrop-blur">
+            <span class="font-semibold text-white"><%= zone %></span>
+            <span class="ml-1 text-[10px] uppercase tracking-wide text-slate-500"><%= zone.room_type_label %></span>
           </td>
           <% @grid.cells_for(zone).each do |cell| %>
             <% case cell.state %>
             <% when :free %>
-              <td class="border border-slate-100 bg-slate-50/50 px-1 py-2"></td>
+              <td class="cell-free border border-white/[0.04] px-1 py-2"></td>
             <% when :cleaning %>
-              <td class="border border-slate-100 bg-sky-200 px-1 py-2 text-center" title="<%= t(".cleaning", zone: cell.reservation.zone) %>">🧹</td>
+              <td class="cell-cleaning border border-white/[0.04] px-1 py-2 text-center" title="<%= t(".cleaning", zone: cell.reservation.zone) %>">🧹</td>
             <% when :pending %>
-              <td class="border border-slate-100 bg-amber-200 px-1 py-2 text-center" title="<%= cell.reservation.user %> · <%= l(cell.reservation.starts_at, format: :short) %> — <%= l(cell.reservation.ends_at, format: :time_only) %> · <%= cell.reservation.status_label %>">…</td>
+              <td class="cell-pending border border-white/[0.04] px-1 py-2 text-center" title="<%= cell.reservation.client_name %> · <%= l(cell.reservation.starts_at, format: :short) %> — <%= l(cell.reservation.ends_at, format: :time_only) %> · <%= cell.reservation.status_label %>">…</td>
             <% else %>
-              <td class="border border-slate-100 bg-emerald-300 px-1 py-2 text-center" title="<%= cell.reservation.user %> · <%= l(cell.reservation.starts_at, format: :short) %> — <%= l(cell.reservation.ends_at, format: :time_only) %>">✓</td>
+              <td class="cell-confirmed border border-white/[0.04] px-1 py-2 text-center" title="<%= cell.reservation.client_name %> · <%= l(cell.reservation.starts_at, format: :short) %> — <%= l(cell.reservation.ends_at, format: :time_only) %>">✓</td>
             <% end %>
           <% end %>
         </tr>
@@ -51,9 +49,9 @@
   </table>
 </div>
 
-<div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
-  <span class="flex items-center gap-2"><span class="h-3 w-6 rounded bg-emerald-300"></span> <%= t(".legend_confirmed") %></span>
-  <span class="flex items-center gap-2"><span class="h-3 w-6 rounded bg-amber-200"></span> <%= t(".legend_pending") %></span>
-  <span class="flex items-center gap-2"><span class="h-3 w-6 rounded bg-sky-200"></span> <%= t(".legend_cleaning") %></span>
-  <span class="flex items-center gap-2"><span class="h-3 w-6 rounded bg-slate-100"></span> <%= t(".legend_free") %></span>
+<div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-400">
+  <span class="flex items-center gap-2"><span class="legend-swatch cell-confirmed"></span> <%= t(".legend_confirmed") %></span>
+  <span class="flex items-center gap-2"><span class="legend-swatch cell-pending"></span> <%= t(".legend_pending") %></span>
+  <span class="flex items-center gap-2"><span class="legend-swatch cell-cleaning"></span> <%= t(".legend_cleaning") %></span>
+  <span class="flex items-center gap-2"><span class="legend-swatch cell-free border border-white/10"></span> <%= t(".legend_free") %></span>
 </div>
