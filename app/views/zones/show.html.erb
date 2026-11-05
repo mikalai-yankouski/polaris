@@ -102,18 +102,18 @@
 </section>
 
 <div class="mx-auto grid max-w-6xl grid-cols-1 items-start gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
-  <%# ---------- Бронирование: «окно в ночь» с живым расчётом, первым на экране ---------- %>
-  <section class="night-panel reveal min-w-0 p-6 sm:p-8 lg:sticky lg:top-24">
+  <%# ---------- Бронирование: светлая карта с живым расчётом, первым на экране ---------- %>
+  <section class="reveal min-w-0 border border-ink/25 bg-paper-card p-6 sm:p-8 lg:sticky lg:top-24">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 class="heading-display text-xl font-semibold text-white"><%= t(".book") %></h2>
-      <span class="flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] <%= @zone.requires_approval ? "text-star-300" : "text-emerald-300" %>">
+      <h2 class="heading-display text-xl font-semibold text-ink"><%= t(".book") %></h2>
+      <span class="flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] <%= @zone.requires_approval ? "text-atlas-gold" : "text-emerald-700" %>">
         <%= icon (@zone.requires_approval ? :shield : :check_circle), css_class: "h-3.5 w-3.5" %>
         <%= @zone.requires_approval ? t(".approval_required_short") : t(".auto_confirm_short") %>
       </span>
     </div>
 
     <% if Bepaid::Config.configured? %>
-      <p class="mt-4 flex items-start gap-2.5 border border-aurora-300/20 bg-aurora-500/10 px-4 py-3 text-sm text-aurora-300">
+      <p class="mt-4 flex items-start gap-2.5 border border-atlas-blue/25 bg-atlas-blue/5 px-4 py-3 text-sm text-atlas-blue">
         <%= icon :credit_card, css_class: "mt-0.5 h-4 w-4 shrink-0" %>
         <%= t(".prepayment_note") %>
       </p>
@@ -138,19 +138,23 @@
     </figure>
 
     <div class="reveal border border-ink/25 bg-paper-card p-6" style="--reveal-delay: .1s">
-      <p class="tag"><%= t(".rules") %></p>
-      <ul class="mt-4 space-y-3 text-sm">
-        <li class="flex items-center gap-3 text-ink">
-          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-atlas-blue" %>
-          <%= t(".min_duration", duration: duration_text(@zone.min_duration_minutes)) %>
+      <p class="tag"><%= t(".standard_tag") %></p>
+      <ul class="mt-4 space-y-3.5 text-sm">
+        <li class="flex items-start gap-3 text-ink">
+          <%= icon :clock, css_class: "mt-0.5 h-4 w-4 shrink-0 text-atlas-blue" %>
+          <span><%= t(".min_duration", duration: duration_text(@zone.min_duration_minutes)) %> · <%= t(".max_duration", duration: duration_text(@zone.max_duration_minutes)) %></span>
         </li>
-        <li class="flex items-center gap-3 text-ink">
-          <%= icon :clock, css_class: "h-4 w-4 shrink-0 text-ink-soft" %>
-          <%= t(".max_duration", duration: duration_text(@zone.max_duration_minutes)) %>
+        <li class="flex items-start gap-3 text-ink">
+          <%= icon :sparkle, css_class: "mt-0.5 h-4 w-4 shrink-0 text-atlas-blue" %>
+          <span><%= t(".standard_clean", minutes: @zone.cleaning_buffer_minutes) %></span>
         </li>
-        <li class="flex items-center gap-3 text-ink">
-          <%= icon :calendar, css_class: "h-4 w-4 shrink-0 text-ink-soft" %>
-          <%= @zone.requires_approval ? t(".approval_required") : t(".auto_confirm") %>
+        <li class="flex items-start gap-3 text-ink">
+          <%= icon :shield, css_class: "mt-0.5 h-4 w-4 shrink-0 text-atlas-blue" %>
+          <span><%= t(".standard_quiet") %></span>
+        </li>
+        <li class="flex items-start gap-3 text-ink">
+          <%= icon :calendar, css_class: "mt-0.5 h-4 w-4 shrink-0 text-ink-soft" %>
+          <span><%= @zone.requires_approval ? t(".approval_required") : t(".auto_confirm") %></span>
         </li>
       </ul>
     </div>

@@ -233,27 +233,29 @@ function initStarCursor() {
   if (document.body.hasStarCursorBound) return
   document.body.hasStarCursorBound = true
 
+  // Главная звезда = курсор: позиция ставится синхронно в pointermove,
+  // без rAF и transition — задержки нет в принципе.
   const star = document.createElement("div")
   star.className = "cursor-star"
   star.innerHTML = STAR_SVG
+  // Спутник-шлейф: декор, догоняет с lerp в rAF со самостопом
   const lag = document.createElement("div")
   lag.className = "cursor-star"
   lag.innerHTML = STAR_SVG
   document.body.append(star, lag)
   document.body.classList.add("has-star-cursor")
 
-  star.style.width = "15px"
-  star.style.height = "15px"
+  star.style.width = "17px"
+  star.style.height = "17px"
   lag.style.width = "9px"
   lag.style.height = "9px"
-  lag.style.opacity = "0.35"
+  lag.style.opacity = "0.32"
   star.style.transform = "translate3d(-100px, -100px, 0)"
   lag.style.transform = "translate3d(-100px, -100px, 0)"
 
   let mx = -100, my = -100, lx = -100, ly = -100, raf = null
 
-  // Лаг-спутник догоняет курсор; цикл останавливается, когда догнал
-  const paint = () => {
+  const paintLag = () => {
     lx += (mx - lx) * 0.22
     ly += (my - ly) * 0.22
     lag.style.transform = `translate3d(${lx - 4.5}px, ${ly - 4.5}px, 0)`
@@ -261,14 +263,14 @@ function initStarCursor() {
       raf = null
       return
     }
-    raf = requestAnimationFrame(paint)
+    raf = requestAnimationFrame(paintLag)
   }
 
   document.addEventListener("pointermove", (event) => {
     mx = event.clientX
     my = event.clientY
-    // Главную звезду ставим мгновенно, вне rAF — ноль задержки
-    star.style.transform = `translate3d(${mx - 7.5}px, ${my - 7.5}px, 0)`
+    // Синхронно: звезда стоит ровно там, где системный курсор
+    star.style.transform = `translate3d(${mx - 8.5}px, ${my - 8.5}px, 0)`
     star.classList.add("is-on")
     lag.classList.add("is-on")
 
@@ -280,7 +282,7 @@ function initStarCursor() {
     star.classList.toggle("is-hidden", overText)
     lag.classList.toggle("is-hidden", overText || overInteractive)
 
-    if (!raf) raf = requestAnimationFrame(paint)
+    if (!raf) raf = requestAnimationFrame(paintLag)
   }, { passive: true })
 
   document.addEventListener("pointerleave", () => {

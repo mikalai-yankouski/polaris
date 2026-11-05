@@ -107,23 +107,23 @@
 
   <%# Живой расчёт: длительность и стоимость по тарифной сетке ---------- %>
   <div data-booking-target="summary" class="calc-box hidden px-5 py-4">
-    <div class="flex items-center gap-2.5 text-sm text-slate-300">
-      <%= icon :clock, css_class: "h-4 w-4 text-star-400" %>
-      <span data-booking-target="durationLabel" class="font-medium text-white"></span>
+    <div class="calc-label flex items-center gap-2.5 text-sm">
+      <%= icon :clock, css_class: "calc-icon h-4 w-4" %>
+      <span data-booking-target="durationLabel" class="calc-strong"></span>
     </div>
     <div class="text-right">
-      <span class="block text-[0.65rem] font-semibold uppercase tracking-widest text-slate-500"><%= t(".calc_total") %></span>
-      <span data-booking-target="total" class="heading-display text-lg font-semibold text-star-300"></span>
+      <span class="calc-caption block text-[0.65rem] font-semibold uppercase tracking-widest"><%= t(".calc_total") %></span>
+      <span data-booking-target="total" class="calc-total heading-display text-lg font-semibold"></span>
     </div>
   </div>
 
-  <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-sm text-slate-300 transition-colors hover:border-white/20">
+  <label class="choice-row">
     <%= form.check_box :children_party, class: "mt-0.5" %>
     <span>
       <span class="font-medium"><%= Reservation.human_attribute_name(:children_party) %></span>
-      <span class="mt-0.5 block text-xs text-slate-500"><%= t("reservations.form.children_party_hint") %></span>
+      <span class="calc-caption mt-0.5 block text-xs"><%= t("reservations.form.children_party_hint") %></span>
     </span>
   </label>
 
-  <%= form.submit t(".submit"), class: "btn btn--aurora w-full sm:w-auto" %>
+  <%= form.submit t(".submit"), class: "#{night_design? ? "btn btn--aurora" : "btn-ink"} w-full sm:w-auto" %>
 <% end %>

@@ -26,9 +26,9 @@ class ApplicationController < ActionController::Base
       cookies[:design_theme] == "night"
     end
 
-    # Тема админки: тёмная по умолчанию, светлая — по переключателю
+    # Тема едина для сайта и админки: ночь → тёмная админка, атлас → светлая
     def admin_dark?
-      cookies[:admin_theme] != "light"
+      night_design?
     end
 
     def current_user

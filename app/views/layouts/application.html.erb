@@ -30,9 +30,9 @@
   </head>
 
   <% if admin_section? %>
-    <% admin_klass = admin_dark? ? "theme-dark" : "admin-light" %>
+    <% admin_klass = night_design? ? "theme-dark" : "admin-light" %>
     <body class="<%= admin_klass %> min-h-screen antialiased">
-      <% unless admin_dark? %><div class="atlas-bg" aria-hidden="true"></div><% end %>
+      <% unless night_design? %><div class="atlas-bg" aria-hidden="true"></div><% end %>
       <div class="sky sky--calm" aria-hidden="true">
         <div class="aurora aurora--violet"></div>
         <div class="aurora aurora--indigo"></div>
@@ -59,17 +59,18 @@
         <%= side_link t("admin.nav.reports"), admin_room_hours_report_path, :check_circle %>
 
         <div class="mt-auto space-y-1 border-t border-white/[0.07] pt-4 admin-sidebar-foot">
-          <% if admin_dark? %>
-            <%= button_to theme_switch_path(theme: "light", scope: "admin"), method: :post,
+          <%# Тема едина с публичным сайтом: тот же переключатель %>
+          <% if night_design? %>
+            <%= button_to theme_switch_path(theme: "atlas"), method: :post,
                   class: "side-link w-full cursor-pointer !justify-start",
-                  title: t(".light_admin"), aria: { label: t(".light_admin") } do %>
-              <%= icon :sun, css_class: "h-4 w-4" %><span><%= t(".light_admin") %></span>
+                  title: t(".atlas_theme"), aria: { label: t(".atlas_theme") } do %>
+              <%= icon :sun, css_class: "h-4 w-4" %><span><%= t(".atlas_theme") %></span>
             <% end %>
           <% else %>
-            <%= button_to theme_switch_path(theme: "dark", scope: "admin"), method: :post,
+            <%= button_to theme_switch_path(theme: "night"), method: :post,
                   class: "side-link w-full cursor-pointer !justify-start",
-                  title: t(".dark_admin"), aria: { label: t(".dark_admin") } do %>
-              <%= icon :moon, css_class: "h-4 w-4" %><span><%= t(".dark_admin") %></span>
+                  title: t(".night_theme"), aria: { label: t(".night_theme") } do %>
+              <%= icon :moon, css_class: "h-4 w-4" %><span><%= t(".night_theme") %></span>
             <% end %>
           <% end %>
           <%= link_to root_path, class: "side-link" do %>
@@ -95,14 +96,14 @@
             <% end %>
             <% if authenticated? %>
               <span class="ml-auto truncate text-xs text-slate-400"><%= current_user %></span>
-              <% if admin_dark? %>
-                <%= button_to theme_switch_path(theme: "light", scope: "admin"), method: :post, class: "theme-toggle !rounded-full",
-                      form: { class: "inline" }, title: t(".light_admin"), aria: { label: t(".light_admin") } do %>
+              <% if night_design? %>
+                <%= button_to theme_switch_path(theme: "atlas"), method: :post, class: "theme-toggle !rounded-full",
+                      form: { class: "inline" }, title: t(".atlas_theme"), aria: { label: t(".atlas_theme") } do %>
                   <%= icon :sun, css_class: "h-3.5 w-3.5" %>
                 <% end %>
               <% else %>
-                <%= button_to theme_switch_path(theme: "dark", scope: "admin"), method: :post, class: "theme-toggle !rounded-full",
-                      form: { class: "inline" }, title: t(".dark_admin"), aria: { label: t(".dark_admin") } do %>
+                <%= button_to theme_switch_path(theme: "night"), method: :post, class: "theme-toggle !rounded-full",
+                      form: { class: "inline" }, title: t(".night_theme"), aria: { label: t(".night_theme") } do %>
                   <%= icon :moon, css_class: "h-3.5 w-3.5" %>
                 <% end %>
               <% end %>

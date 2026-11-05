@@ -576,8 +576,8 @@ body input[type="checkbox"] {
 
 /* Календарь заявки: месяц всегда открыт */
 .cal {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(25, 22, 16, 0.18);
+  background: #fffdf8;
   padding: 1rem 1.1rem 1.1rem;
 }
 
@@ -592,7 +592,7 @@ body input[type="checkbox"] {
 .cal-title {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-ink);
 }
 
 .cal-nav {
@@ -602,13 +602,13 @@ body input[type="checkbox"] {
   width: 2.1rem;
   height: 2.1rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9aa5c7;
+  border: 1px solid rgba(25, 22, 16, 0.25);
+  color: var(--color-ink-soft);
   cursor: pointer;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-.cal-nav:hover:not(:disabled) { border-color: rgba(242, 213, 138, 0.45); color: var(--color-star-300); }
+.cal-nav:hover:not(:disabled) { border-color: var(--color-atlas-blue); color: var(--color-atlas-blue); }
 .cal-nav:disabled { opacity: 0.3; cursor: default; }
 
 .cal-grid {
@@ -624,7 +624,7 @@ body input[type="checkbox"] {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5d6a8c;
+  color: #a49b88;
 }
 
 .cal-day {
@@ -635,28 +635,24 @@ body input[type="checkbox"] {
   border-radius: 999px;
   border: 1px solid transparent;
   font-size: 0.83rem;
-  color: #cdd5ec;
+  color: var(--color-ink);
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.cal-day:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); color: #fff; }
-.cal-day:disabled { opacity: 0.28; cursor: default; }
-.cal-day--today { border-color: rgba(228, 188, 99, 0.5); }
+.cal-day:hover:not(:disabled) { background: rgba(38, 53, 124, 0.08); }
+.cal-day:disabled { opacity: 0.3; cursor: default; }
+.cal-day--today { border-color: rgba(166, 124, 46, 0.55); }
 
 .cal-day--sel {
-  background: var(--color-star-500);
-  border-color: var(--color-star-500);
-  color: var(--color-night-950);
+  background: var(--color-atlas-blue);
+  border-color: var(--color-atlas-blue);
+  color: #fff;
   font-weight: 600;
 }
 
-.cal-day--sel:hover:not(:disabled) {
-  background: var(--color-star-400);
-  color: var(--color-night-950);
-}
+.cal-day--sel:hover:not(:disabled) { background: #1f2c66; }
 
-/* Дропдауны заявки */
 .sel { position: relative; }
 
 .sel-btn {
@@ -665,18 +661,18 @@ body input[type="checkbox"] {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(25, 22, 16, 0.35);
+  background: #fffdf8;
   padding: 0.75rem 1rem;
-  color: #e9edf9;
+  color: var(--color-ink);
   font-size: 0.95rem;
   text-align: left;
   cursor: pointer;
   transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
-.sel-btn:hover { border-color: rgba(255, 255, 255, 0.22); }
-.sel-btn:focus-visible { outline: 2px solid var(--color-star-400); outline-offset: 2px; }
+.sel-btn:hover { border-color: rgba(25, 22, 16, 0.55); }
+.sel-btn:focus-visible { outline: 2px solid var(--color-atlas-blue); outline-offset: 2px; }
 
 .sel-panel {
   position: absolute;
@@ -686,10 +682,9 @@ body input[type="checkbox"] {
   z-index: 30;
   max-height: 15.5rem;
   overflow-y: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(5, 7, 15, 0.96);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(25, 22, 16, 0.25);
+  background: #fffdf8;
+  box-shadow: 0 18px 50px -12px rgba(25, 22, 16, 0.3);
   padding: 0.35rem;
 }
 
@@ -698,18 +693,101 @@ body input[type="checkbox"] {
   width: 100%;
   align-items: center;
   gap: 0.6rem;
-  border-radius: 0.6rem;
+  border-radius: 2px;
   padding: 0.5rem 0.7rem;
-  color: #cdd5ec;
+  color: #44403c;
   font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.sel-opt:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
-.sel-opt--sel, .sel-opt--sel:hover { color: var(--color-star-300); }
-.sel-hint { display: block; font-size: 0.7rem; color: #5d6a8c; }
+.sel-opt:hover { background: rgba(38, 53, 124, 0.07); color: var(--color-ink); }
+.sel-opt--sel, .sel-opt--sel:hover { color: var(--color-atlas-blue); font-weight: 500; }
+.sel-hint { display: block; font-size: 0.7rem; color: #a49b88; }
+
+/* Тёмные версии календаря и селектов — в ночи и в «окне в ночь» */
+.design-night .cal,
+.night-panel .cal {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.design-night .cal-title,
+.night-panel .cal-title { color: #fff; }
+
+.design-night .cal-nav,
+.night-panel .cal-nav {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #9aa5c7;
+}
+
+.design-night .cal-nav:hover:not(:disabled),
+.night-panel .cal-nav:hover:not(:disabled) {
+  border-color: rgba(242, 213, 138, 0.45);
+  color: var(--color-star-300);
+}
+
+.design-night .cal-wd,
+.night-panel .cal-wd { color: #5d6a8c; }
+
+.design-night .cal-day,
+.night-panel .cal-day { color: #cdd5ec; }
+
+.design-night .cal-day:hover:not(:disabled),
+.night-panel .cal-day:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.design-night .cal-day--sel,
+.night-panel .cal-day--sel {
+  background: var(--color-star-500);
+  border-color: var(--color-star-500);
+  color: var(--color-night-950);
+}
+
+.design-night .cal-day--sel:hover:not(:disabled),
+.night-panel .cal-day--sel:hover:not(:disabled) {
+  background: var(--color-star-400);
+  color: var(--color-night-950);
+}
+
+.design-night .sel-btn,
+.night-panel .sel-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e9edf9;
+}
+
+.design-night .sel-btn:hover,
+.night-panel .sel-btn:hover { border-color: rgba(255, 255, 255, 0.22); }
+
+.design-night .sel-btn:focus-visible,
+.night-panel .sel-btn:focus-visible { outline-color: var(--color-star-400); }
+
+.design-night .sel-panel,
+.night-panel .sel-panel {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(5, 7, 15, 0.96);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.75);
+}
+
+.design-night .sel-opt,
+.night-panel .sel-opt { color: #cdd5ec; }
+
+.design-night .sel-opt:hover,
+.night-panel .sel-opt:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.design-night .sel-opt--sel, .design-night .sel-opt--sel:hover,
+.night-panel .sel-opt--sel, .night-panel .sel-opt--sel:hover { color: var(--color-star-300); }
+
+.design-night .sel-hint,
+.night-panel .sel-hint { color: #5d6a8c; }
 
 .label-star { margin-left: 0.15rem; color: var(--color-star-400); }
 
@@ -1587,7 +1665,8 @@ body input[type="checkbox"] {
 
 .theme-toggle:hover { border-color: var(--color-ink); background: rgba(25, 22, 16, 0.05); }
 
-.design-night .theme-toggle {
+.design-night .theme-toggle,
+.theme-dark .theme-toggle {
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.04);
@@ -1599,6 +1678,7 @@ body input[type="checkbox"] {
   background: rgba(255, 255, 255, 0.09);
 }
 
+/* Звезда-курсор в ночи: шампань */
 .design-night .cursor-star { color: var(--color-star-400); }
 .design-night .cursor-star.is-hover { color: var(--color-star-300); }
 
@@ -1639,6 +1719,13 @@ body input[type="checkbox"] {
 body.has-star-cursor,
 body.has-star-cursor *:not(input):not(textarea):not(select) {
   cursor: none !important;
+}
+
+/* Поля ввода: звезда прячется, родной курсор возвращается */
+body.has-star-cursor input,
+body.has-star-cursor textarea,
+body.has-star-cursor select {
+  cursor: auto !important;
 }
 
 .cursor-star {
@@ -1993,6 +2080,43 @@ body.has-star-cursor *:not(input):not(textarea):not(select) {
   color: #8a6215;
   background: linear-gradient(135deg, #f2d58a 0%, #e4bc63 100%);
 }
+
+
+/* Семантика формы заявки: читается в обеих темах */
+.calc-label { color: var(--color-ink-soft); }
+.calc-strong { color: var(--color-ink); font-weight: 500; }
+.calc-icon { color: var(--color-atlas-gold); }
+.calc-total { color: var(--color-atlas-gold); }
+.calc-caption { color: #a49b88; }
+
+.choice-row {
+  display: flex;
+  cursor: pointer;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgba(25, 22, 16, 0.2);
+  background: #fffdf8;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  color: #44403c;
+  transition: border-color 0.2s ease;
+}
+
+.choice-row:hover { border-color: rgba(25, 22, 16, 0.4); }
+
+.design-night .calc-label, .night-panel .calc-label { color: #c3cce4; }
+.design-night .calc-strong, .night-panel .calc-strong { color: #fff; }
+.design-night .calc-icon, .night-panel .calc-icon { color: var(--color-star-400); }
+.design-night .calc-total, .night-panel .calc-total { color: var(--color-star-300); }
+.design-night .calc-caption, .night-panel .calc-caption { color: #5d6a8c; }
+
+.design-night .choice-row, .night-panel .choice-row {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: #cbd5ec;
+}
+
+.design-night .choice-row:hover, .night-panel .choice-row:hover { border-color: rgba(255, 255, 255, 0.2); }
 
 /* ------------------------------------------------------------------ */
 /* Reduced motion                                                      */
