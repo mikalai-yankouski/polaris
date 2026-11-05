@@ -1,9 +1,10 @@
-# Polaris on the same Hoster.by VPS as coffee-pulse.by, separate stack.
-# Shares the existing Caddy (ports 80/443) via the varka_default network.
-# No domain yet: Caddy serves plain HTTP on the VPS IP (see Caddyfile.snippet).
+# Polaris on its own Hoster.by cloud server (project «Облако 32869»).
+# Self-contained stack: Postgres + Rails (puma + solid_queue in puma) + Caddy (TLS).
 #
 #   docker compose up -d --build
-#   docker compose exec web bin/rails db:seed
+#   docker compose exec web bin/rails db:prepare
+#
+# Domain: https://polarisclub.by (DNS A/AAAA -> this server's IP).
 
 name: polaris
 
@@ -51,9 +52,6 @@ services:
         condition: service_healthy
     volumes:
       - /opt/polaris/storage:/rails/storage
-    networks:
-      - default
-      - proxy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -H \"Host: $${APP_HOST}\" http://127.0.0.1/up || exit 1"]
       interval: 15s
@@ -61,10 +59,24 @@ services:
       retries: 10
       start_period: 90s
 
-networks:
-  proxy:
-    external: true
-    name: varka_default
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      CADDY_EMAIL: ${CADDY_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

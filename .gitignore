@@ -40,3 +40,5 @@
 
 # ZCode session artifacts
 .zcode/
+/deploy/hoster/.env
+/deploy/polarisclub/.env

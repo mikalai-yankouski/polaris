@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Copy this app to the VPS next to coffee-pulse.by / metehi.by and start it.
-# Usage: ./deploy.sh root@VPS_IP
+# Deploy Polaris to its own Hoster.by cloud server (polarisclub.by).
+# Usage: ./deploy.sh root@NEW_SERVER_IP
 set -euo pipefail
 
-REMOTE="${1:-root@87.232.65.174}"
+REMOTE="${1:-root@NEW_SERVER_IP}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
@@ -21,20 +21,19 @@ rsync -az --delete \
   --exclude .git --exclude tmp --exclude log --exclude storage \
   --exclude node_modules --exclude .kamal \
   "$ROOT/" "$REMOTE:/opt/polaris/"
-scp "$HERE/.env" "$REMOTE:/opt/polaris/deploy/hoster/.env"
+scp "$HERE/.env" "$REMOTE:/opt/polaris/deploy/polarisclub/.env"
 
 ssh "$REMOTE" 'bash -s' <<'REMOTE'
 set -euo pipefail
-cd /opt/polaris/deploy/hoster
+cd /opt/polaris/deploy/polarisclub
 docker compose up -d --build
 for i in $(seq 1 40); do
-  if docker compose exec -T web curl -fsS -H "Host: 87.232.65.174" http://127.0.0.1/up >/dev/null; then
+  if docker compose exec -T web curl -fsS -H "Host: polarisclub.by" http://127.0.0.1/up >/dev/null; then
     break
   fi
   sleep 3
 done
-docker compose exec -T web bin/rails db:seed
 docker compose ps
 docker system df
 REMOTE
-echo "Up. Open http://87.232.65.174 (until the domain is pointed here)."
+echo "Up. https://polarisclub.by"
