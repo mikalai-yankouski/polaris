@@ -10,6 +10,7 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user, :admin_section?, :night_design?, :admin_dark?
   before_action :set_current_user
+  before_action :require_site_access
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
@@ -19,6 +20,16 @@ class ApplicationController < ActionController::Base
     # Админка остаётся на классическом светлом chrome
     def admin_section?
       is_a?(Admin::BaseController)
+    end
+
+    # Тестовый режим: публичный сайт открывается только после пина на /enter.
+    # Админка и bePaid-webhook ходят своими дверями — им пин не нужен.
+    def require_site_access
+      return if admin_section? || is_a?(SiteAccessController)
+      return if cookies.signed[:site_access] == "granted"
+
+      session[:return_to] = request.path if request.get? && !request.xhr?
+      redirect_to enter_path, allow_other_host: false
     end
 
     # Две темы публичного сайта: «атлас» (светлая) и «ночное небо» (v1)

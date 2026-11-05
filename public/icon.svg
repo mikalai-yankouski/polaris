@@ -1,3 +1,24 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#141d44"/>
+      <stop offset="0.55" stop-color="#080b1c"/>
+      <stop offset="1" stop-color="#030409"/>
+    </linearGradient>
+    <radialGradient id="aurora" cx="0.5" cy="0.4" r="0.65">
+      <stop offset="0" stop-color="#5a4fd8" stop-opacity="0.5"/>
+      <stop offset="0.55" stop-color="#26357c" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#26357c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="star" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f9ecc6"/>
+      <stop offset="0.5" stop-color="#f2d58a"/>
+      <stop offset="1" stop-color="#e4bc63"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+  <rect width="512" height="512" rx="112" fill="url(#aurora)"/>
+  <path transform="translate(92 92) scale(13.6667)" fill="url(#star)" d="M12 0c.6 6.5 4.9 10.8 12 12-7.1 1.2-11.4 5.5-12 12-.6-6.5-4.9-10.8-12-12C7.1 10.8 11.4 6.5 12 0Z"/>
+  <path transform="translate(380 78) scale(4.5)" fill="#f8e7ba" opacity="0.8" d="M12 0c.6 6.5 4.9 10.8 12 12-7.1 1.2-11.4 5.5-12 12-.6-6.5-4.9-10.8-12-12C7.1 10.8 11.4 6.5 12 0Z"/>
+  <path transform="translate(118 370) scale(2.6)" fill="#f8e7ba" opacity="0.5" d="M12 0c.6 6.5 4.9 10.8 12 12-7.1 1.2-11.4 5.5-12 12-.6-6.5-4.9-10.8-12-12C7.1 10.8 11.4 6.5 12 0Z"/>
 </svg>

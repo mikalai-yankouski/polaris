@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Тестовый режим: вход по пину, реальных клиентов пока не пускаем
+  get "enter", to: "site_access#new", as: :enter
+  post "enter", to: "site_access#create"
+
   # Лендинг на корне; полный каталог — на /zones
   root "zones#landing"
   get "zones", to: "zones#index"
