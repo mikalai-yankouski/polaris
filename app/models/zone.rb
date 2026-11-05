@@ -28,8 +28,13 @@ class Zone < ApplicationRecord
   def to_s = [ building_code, name ].compact.join(" · ")
 
   # Обложка — выбранная админом или первая из загруженных
-  def cover_photo
-    photos.find { |photo| photo.id == cover_attachment_id } || photos.first
+  def cover_photo = gallery_photos.first
+
+  # Фотографии для галереи: обложка первой, остальные в порядке загрузки
+  def gallery_photos
+    ordered = photos.to_a
+    cover = ordered.find { |photo| photo.id == cover_attachment_id }
+    cover ? [cover, *ordered - [cover]] : ordered
   end
 
   def room_type_label

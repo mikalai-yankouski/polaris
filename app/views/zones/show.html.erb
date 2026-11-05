@@ -1,18 +1,57 @@
 <% if night_design? %>
-<% photo = @zone.cover_photo %>
+<% photos = @zone.gallery_photos %>
+<% gallery = photos.many? %>
 
 <%# ---------- Кинематографичный баннер зоны ---------- %>
 <section class="relative mx-auto max-w-6xl px-4">
-  <div class="zone-card beam reveal min-h-[19rem] sm:min-h-[23rem]">
-    <div class="art <%= photo ? "" : "art--#{@zone.room_type}" %>">
-      <% if photo %>
-        <%= image_tag photo, alt: "" %>
-      <% else %>
-        <span class="art-glow"></span>
-        <%= icon @zone.room_type.to_sym, css_class: "art-icon" %>
-      <% end %>
-    </div>
+  <div class="zone-card beam reveal min-h-[19rem] sm:min-h-[23rem]" data-controller="<%= "gallery" if gallery %>">
+    <% if gallery %>
+      <div class="art touch-pan-y select-none" data-gallery-target="viewport"
+           data-action="pointerdown->gallery#pointerdown pointermove->gallery#pointermove pointerup->gallery#pointerup pointercancel->gallery#pointerup">
+        <div class="gallery-track" data-gallery-target="track">
+          <% photos.each_with_index do |gallery_photo, index| %>
+            <div class="gallery-slide">
+              <%= image_tag gallery_photo,
+                            alt: t(".photo_alt", zone: @zone.to_s, index: index + 1, total: photos.size),
+                            loading: (index.zero? ? "eager" : "lazy"), decoding: "async", draggable: false %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="art <%= photos.any? ? "" : "art--#{@zone.room_type}" %>">
+        <% if photos.any? %>
+          <%= image_tag photos.first, alt: "" %>
+        <% else %>
+          <span class="art-glow"></span>
+          <%= icon @zone.room_type.to_sym, css_class: "art-icon" %>
+        <% end %>
+      </div>
+    <% end %>
     <div class="scrim"></div>
+
+    <% if gallery %>
+      <div class="absolute left-5 top-5 z-10 flex items-center gap-3">
+        <span class="gallery-counter" data-gallery-target="counter"><%= format("%02d / %02d", 1, photos.size) %></span>
+        <span class="gallery-dots">
+          <% photos.each_with_index do |_, index| %>
+            <button type="button" class="gallery-dot <%= "is-active" if index.zero? %>"
+                    data-gallery-target="goto" data-index="<%= index %>" data-action="gallery#select"
+                    aria-label="<%= t(".go_photo", index: index + 1) %>"
+                    aria-current="<%= index.zero? %>"></button>
+          <% end %>
+        </span>
+      </div>
+
+      <button type="button" class="gallery-btn gallery-btn--night absolute left-4 top-[26%] sm:top-1/2 -translate-y-1/2 z-10"
+              data-gallery-target="prev" data-action="gallery#prev" aria-label="<%= t(".prev_photo") %>" disabled>
+        <%= icon :chevron_left, css_class: "h-5 w-5" %>
+      </button>
+      <button type="button" class="gallery-btn gallery-btn--night absolute right-4 top-[26%] sm:top-1/2 -translate-y-1/2 z-10"
+              data-gallery-target="next" data-action="gallery#next" aria-label="<%= t(".next_photo") %>">
+        <%= icon :chevron_right, css_class: "h-5 w-5" %>
+      </button>
+    <% end %>
 
     <span class="chip chip--gold absolute right-5 top-5 z-10 !px-4 !py-2 !text-sm">
       <%= t(".price", amount: money(@zone.hourly_rate_cents)) %>
@@ -85,7 +124,8 @@
   </div>
 </div>
 <% else %>
-<% photo = @zone.cover_photo %>
+<% photos = @zone.gallery_photos %>
+<% gallery = photos.many? %>
 
 <%# ---------- Шапка зала: компактная, форма сразу видна ---------- %>
 <section class="mx-auto max-w-6xl px-4 pt-10">
@@ -123,19 +163,63 @@
 
   <%# ---------- Правая колонка: фото-планшет, правила, удобства ---------- %>
   <div class="min-w-0 space-y-6">
-    <figure class="plate reveal overflow-hidden" style="--reveal-delay: .05s">
-      <div class="plate-media <%= photo ? "" : "plate--#{@zone.room_type}" %> !aspect-[4/3]">
-        <% if photo %>
-          <%= image_tag photo, alt: @zone.to_s %>
-        <% else %>
-          <span class="plate-art"><%= icon @zone.room_type.to_sym %></span>
-        <% end %>
-      </div>
-      <figcaption class="plate-caption !border-b-0">
-        <span><%= t(".plate_caption") %></span>
-        <span><%= @zone.building_code %></span>
-      </figcaption>
-    </figure>
+    <% if gallery %>
+      <figure class="plate reveal overflow-hidden" style="--reveal-delay: .05s" data-controller="gallery">
+        <div class="plate-media !aspect-[4/3] touch-pan-y select-none" data-gallery-target="viewport"
+             data-action="pointerdown->gallery#pointerdown pointermove->gallery#pointermove pointerup->gallery#pointerup pointercancel->gallery#pointerup">
+          <div class="gallery-track" data-gallery-target="track">
+            <% photos.each_with_index do |gallery_photo, index| %>
+              <div class="gallery-slide">
+                <%= image_tag gallery_photo,
+                              alt: t(".photo_alt", zone: @zone.to_s, index: index + 1, total: photos.size),
+                              loading: (index.zero? ? "eager" : "lazy"), decoding: "async", draggable: false %>
+              </div>
+            <% end %>
+          </div>
+
+          <span class="gallery-counter absolute left-3 top-3 z-10" data-gallery-target="counter"><%= format("%02d / %02d", 1, photos.size) %></span>
+
+          <button type="button" class="gallery-btn gallery-btn--ink absolute left-4 top-1/2 -translate-y-1/2"
+                  data-gallery-target="prev" data-action="gallery#prev" aria-label="<%= t(".prev_photo") %>" disabled>
+            <%= icon :chevron_left, css_class: "h-5 w-5" %>
+          </button>
+          <button type="button" class="gallery-btn gallery-btn--ink absolute right-4 top-1/2 -translate-y-1/2"
+                  data-gallery-target="next" data-action="gallery#next" aria-label="<%= t(".next_photo") %>">
+            <%= icon :chevron_right, css_class: "h-5 w-5" %>
+          </button>
+        </div>
+
+        <div class="gallery-thumbs">
+          <% photos.each_with_index do |gallery_photo, index| %>
+            <button type="button" class="gallery-thumb <%= "is-active" if index.zero? %>"
+                    data-gallery-target="goto" data-index="<%= index %>" data-action="gallery#select"
+                    aria-label="<%= t(".go_photo", index: index + 1) %>"
+                    aria-current="<%= index.zero? %>">
+              <%= image_tag gallery_photo, alt: "", loading: "lazy", decoding: "async" %>
+            </button>
+          <% end %>
+        </div>
+
+        <figcaption class="plate-caption !border-b-0">
+          <span><%= t(".gallery_caption") %></span>
+          <span><%= @zone.building_code %></span>
+        </figcaption>
+      </figure>
+    <% else %>
+      <figure class="plate reveal overflow-hidden" style="--reveal-delay: .05s">
+        <div class="plate-media <%= photos.any? ? "" : "plate--#{@zone.room_type}" %> !aspect-[4/3]">
+          <% if photos.any? %>
+            <%= image_tag photos.first, alt: @zone.to_s %>
+          <% else %>
+            <span class="plate-art"><%= icon @zone.room_type.to_sym %></span>
+          <% end %>
+        </div>
+        <figcaption class="plate-caption !border-b-0">
+          <span><%= t(".plate_caption") %></span>
+          <span><%= @zone.building_code %></span>
+        </figcaption>
+      </figure>
+    <% end %>
 
     <div class="reveal border border-ink/25 bg-paper-card p-6" style="--reveal-delay: .1s">
       <p class="tag"><%= t(".standard_tag") %></p>
