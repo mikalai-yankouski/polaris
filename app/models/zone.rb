@@ -34,7 +34,7 @@ class Zone < ApplicationRecord
   def gallery_photos
     ordered = photos.to_a
     cover = ordered.find { |photo| photo.id == cover_attachment_id }
-    cover ? [cover, *ordered - [cover]] : ordered
+    cover ? [ cover, *ordered - [ cover ] ] : ordered
   end
 
   def room_type_label

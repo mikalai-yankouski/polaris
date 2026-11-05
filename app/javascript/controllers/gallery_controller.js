@@ -1,7 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+const AUTOPLAY_MS = 5000
+
 // Галерея фото зала: слайд-трек, стрелки, точки/миниатюры, свайп и стрелки клавиатуры.
-// Не зацикливается: на краях стрелки гаснут, позиция всегда видна по счётчику.
+// Слайды крутятся сами, по кругу: пауза при наведении и в скрытой вкладке, любое
+// вмешательство останавливает прокрутку до конца визита. При reduced-motion — не крутится.
+// Стрелки вручную не зацикливаются: на краях гаснут, позиция всегда видна по счётчику.
 export default class extends Controller {
   static targets = ["viewport", "track", "counter", "goto", "prev", "next"]
 
@@ -9,6 +13,8 @@ export default class extends Controller {
     this.index = 0
     this.total = this.trackTarget.children.length
     this.pointer = null
+    this.stopped = false
+    this.timer = null
     this.render()
 
     this.keydown = (event) => {
@@ -16,17 +22,46 @@ export default class extends Controller {
       if (event.key === "ArrowRight") { event.preventDefault(); this.next() }
     }
     this.element.addEventListener("keydown", this.keydown)
+
+    this.bindAutoplay()
   }
 
   disconnect() {
     this.element.removeEventListener("keydown", this.keydown)
+    if (this.pointerenter) {
+      this.element.removeEventListener("pointerenter", this.pointerenter)
+      this.element.removeEventListener("pointerleave", this.pointerleave)
+      document.removeEventListener("visibilitychange", this.visibilitychange)
+    }
+    this.clearTimer()
   }
 
-  prev() { this.go(this.index - 1) }
-  next() { this.go(this.index + 1) }
+  bindAutoplay() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    this.pointerenter = () => this.pause()
+    this.pointerleave = () => this.resume()
+    this.visibilitychange = () => (document.hidden ? this.pause() : this.resume())
+
+    this.element.addEventListener("pointerenter", this.pointerenter)
+    this.element.addEventListener("pointerleave", this.pointerleave)
+    document.addEventListener("visibilitychange", this.visibilitychange)
+
+    this.schedule()
+  }
+
+  prev() { this.manual(this.index - 1) }
+  next() { this.manual(this.index + 1) }
 
   select(event) {
-    this.go(Number(event.currentTarget.dataset.index))
+    this.manual(Number(event.currentTarget.dataset.index))
+  }
+
+  // Ручное действие останавливает автопрокрутку: гость взял управление на себя
+  manual(index) {
+    this.stopped = true
+    this.clearTimer()
+    this.go(index)
   }
 
   go(index) {
@@ -57,7 +92,7 @@ export default class extends Controller {
     if (event.target.closest("button")) return
 
     this.pointer = { x: event.clientX, y: event.clientY, dx: 0, dy: 0 }
-    this.viewportTarget.setPointerCapture(event.pointerId)
+    try { this.viewportTarget.setPointerCapture(event.pointerId) } catch { /* указатель уже ушёл */ }
   }
 
   pointermove(event) {
@@ -73,6 +108,24 @@ export default class extends Controller {
 
     if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return
     dx < 0 ? this.next() : this.prev()
+  }
+
+  pause() { this.clearTimer() }
+
+  resume() {
+    if (!this.stopped && !document.hidden) this.schedule()
+  }
+
+  schedule() {
+    this.clearTimer()
+    this.timer = setTimeout(() => {
+      this.go((this.index + 1) % this.total)
+      this.schedule()
+    }, AUTOPLAY_MS)
+  }
+
+  clearTimer() {
+    if (this.timer) { clearTimeout(this.timer); this.timer = null }
   }
 
   pad(number) {
